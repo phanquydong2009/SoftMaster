@@ -1,0 +1,11 @@
+
+const categories = [
+  { id: '1', name: 'Thiết kế 3D', image: require('../design/image/ic_3d.png') },
+  { id: '2', name: 'Thiết kế đồ họa', image: require('../design/image/ic_design.png') },
+  { id: '3', name: 'Phát triển Web', image: require('../design/image/ic_web.png') },
+  { id: '4', name: 'SEO & Tiếp thị', image: require('../design/image/ic_sale.png') },
+  { id: '5', name: 'Tài chính & Kế toán', image: require('../design/image/ic_bank.png') },
+  { id: '6', name: 'Phát triển bản thân', image: require('../design/image/icon_pro.png') },
+  { id: '7', name: 'Năng suất văn phòng', image: require('../design/image/ic_settingoffice.png') },
+  { id: '7', name: 'Quản lý nhân sự', image: require('../design/image/ic_office.png') },
+];

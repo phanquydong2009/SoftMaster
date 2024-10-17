@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, TextInput, Switch, Alert } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, TextInput, Switch } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 
 const SignInScreen = () => {
@@ -91,6 +92,8 @@ const SignInScreen = () => {
                 console.log('Login response:', loginData); // Log phản hồi đăng nhập
 
                 if (loginResponse.ok) {
+                    await AsyncStorage.setItem('USER_INFO', JSON.stringify(user));
+
                     // Chuyển sang màn hình "Trang chủ" và truyền tên người dùng
                     console.log('Navigating to HomeScreen with name:', user.name); // Log tên người dùng đang chuyển
 

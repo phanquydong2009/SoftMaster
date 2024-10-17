@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   Text,
@@ -7,15 +7,21 @@ import {
   StyleSheet,
   ScrollView,
 } from 'react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import {useNavigation, useRoute} from '@react-navigation/native';
 import ToolBar from '../../component/ToolBar';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ProfileScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
-  const userId = route.params?.userId; 
+  const userId = route.params?.userId;
 
-  const [userData, setUserData] = useState({ _id: '', name: '', email: '', avatar: '' }); 
+  const [userData, setUserData] = useState({
+    _id: '',
+    name: '',
+    email: '',
+    avatar: '',
+  });
 
   useEffect(() => {
     if (!userId) {
@@ -25,16 +31,19 @@ const ProfileScreen = () => {
 
     const fetchUserData = async () => {
       try {
-     
-        const response = await fetch(`http://localhost:3001/user/getUserByID/${userId}`);
-        const user = await response.json(); 
+        const response = await fetch(
+          `http://localhost:3001/user/getUserByID/${userId}`,
+        );
+        const user = await response.json();
 
         if (user) {
-          setUserData({ 
-            _id: user._id, 
-            name: user.name, 
+          setUserData({
+            _id: user._id,
+            name: user.name,
             email: user.email,
-            avatar: user.avatar || 'https://cdn-icons-png.flaticon.com/512/1829/1829589.png'
+            avatar:
+              user.avatar ||
+              'https://cdn-icons-png.flaticon.com/512/1829/1829589.png',
           });
         } else {
           console.error('User not found');
@@ -48,26 +57,66 @@ const ProfileScreen = () => {
   }, [userId]);
 
   const handleEditProfile = () => {
-    console.log("ID truyền qua là:", userData._id);
-    navigation.navigate('EditProfile', { userId: userData._id }); 
-};
+    console.log('ID truyền qua là:', userData._id);
+    navigation.navigate('EditProfile', {userId: userData._id});
+  };
+
+  const onSignOut = async () => {
+    await AsyncStorage.removeItem('USER_INFO');
+    navigation.navigate('SignIn');
+  };
 
   const profileItems = [
-    { title: 'Nâng cấp lên Premium', icon: require('../../design/image/vip.png'), onPress: () => navigation.navigate('Premium') },
-    { title: 'Chỉnh sửa hồ sơ', icon: require('../../design/image/edit_profile.png'), onPress: handleEditProfile },
-    { title: 'Tùy chọn thanh toán', icon: require('../../design/image/payment.png'), onPress: () => navigation.navigate('CardPayment') },
-    { title: 'Bảo mật', icon: require('../../design/image/ic_security.png'), onPress: () => navigation.navigate('Security') },
-    { title: 'Ngôn ngữ', icon: require('../../design/image/language.png'), value: 'Vietnam(VN)', onPress: () => navigation.navigate('Language') },
-    { title: 'Chế độ tối', icon: require('../../design/image/dark_mode.png') },
-    { title: 'Điều khoản & Điều kiện', icon: require('../../design/image/terms.png'), onPress: () => navigation.navigate('TermsPolicy') },
-    { title: 'Mời bạn bè', icon: require('../../design/image/invite_friends.png'), onPress: () => navigation.navigate('ShareFriend') },
-    { title: 'Đăng xuất', icon: require('../../design/image/logout.png'), onPress: () =>navigation.navigate('SignIn') },
+    {
+      title: 'Nâng cấp lên Premium',
+      icon: require('../../design/image/vip.png'),
+      onPress: () => navigation.navigate('Premium'),
+    },
+    {
+      title: 'Chỉnh sửa hồ sơ',
+      icon: require('../../design/image/edit_profile.png'),
+      onPress: handleEditProfile,
+    },
+    {
+      title: 'Tùy chọn thanh toán',
+      icon: require('../../design/image/payment.png'),
+      onPress: () => navigation.navigate('CardPayment'),
+    },
+    {
+      title: 'Bảo mật',
+      icon: require('../../design/image/ic_security.png'),
+      onPress: () => navigation.navigate('Security'),
+    },
+    {
+      title: 'Ngôn ngữ',
+      icon: require('../../design/image/language.png'),
+      value: 'Vietnam(VN)',
+      onPress: () => navigation.navigate('Language'),
+    },
+    {title: 'Chế độ tối', icon: require('../../design/image/dark_mode.png')},
+    {
+      title: 'Điều khoản & Điều kiện',
+      icon: require('../../design/image/terms.png'),
+      onPress: () => navigation.navigate('TermsPolicy'),
+    },
+    {
+      title: 'Mời bạn bè',
+      icon: require('../../design/image/invite_friends.png'),
+      onPress: () => navigation.navigate('ShareFriend'),
+    },
+    {
+      title: 'Đăng xuất',
+      icon: require('../../design/image/logout.png'),
+      onPress: onSignOut,
+    },
   ];
 
-  const ProfileItem = ({ icon, title, value, onPress }) => (
+  const ProfileItem = ({icon, title, value, onPress}) => (
     <TouchableOpacity style={styles.item} onPress={onPress}>
       <View style={styles.itemLeft}>
-        {icon && <Image source={icon} style={styles.itemIcon} resizeMode="contain" />}
+        {icon && (
+          <Image source={icon} style={styles.itemIcon} resizeMode="contain" />
+        )}
         <Text style={styles.itemTitle}>{title}</Text>
       </View>
       <View style={styles.itemRight}>
@@ -85,7 +134,11 @@ const ProfileScreen = () => {
           <View style={styles.avatar}>
             <View>
               <Image
-                source={userData.avatar ? { uri: userData.avatar } : require('../../design/image/noprofile.png')}
+                source={
+                  userData.avatar
+                    ? {uri: userData.avatar}
+                    : require('../../design/image/noprofile.png')
+                }
                 style={styles.profileImage}
               />
               <Image

@@ -5,9 +5,11 @@ import {
   TouchableOpacity,
   Image,
   ScrollView,
+  Alert,
 } from 'react-native';
-import React, {useEffect, useState} from 'react'; // Import useEffect and useState
-import {useNavigation, useRoute} from '@react-navigation/native';
+import React, {useCallback, useEffect, useState} from 'react'; // Import useEffect and useState
+import {useIsFocused, useNavigation, useRoute} from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const DetailScreen = () => {
   const navigation = useNavigation(); // Hook điều hướng
@@ -17,30 +19,46 @@ const DetailScreen = () => {
   const [courseData, setCourseData] = useState(null); // State để lưu dữ liệu khóa học
   const [averageRating, setAverageRating] = useState(null); // State để lưu đánh giá trung bình
   const [countFeedback, setCountFeedback] = useState(null); // State để lưu số lượng feedback
+  const [userInfo, setUserInfo] = useState(null);
   const handleNavigateToReview = () => {
     navigation.navigate('ReviewCourse', {courseId});
   };
+
+  const isJoinedCourse = courseData?.isJoinedCourse;
+
+  const fetchCourseDetail = useCallback(async () => {
+    // lấy user id
+    const user = JSON.parse(await AsyncStorage.getItem('USER_INFO'));
+    setUserInfo(user);
+
+    const courseResponse = await fetch(
+      `http://localhost:3001/course/getDetailByCourseID/${courseId}/?userId=${user._id}`,
+    );
+    const courseData = await courseResponse.json();
+    setCourseData(courseData);
+  }, [courseId]);
+
+  const isFocused = useIsFocused();
+
+  useEffect(() => {
+    // Gọi API lấy thông tin chi tiết khóa học
+    fetchCourseDetail();
+  }, [isFocused, fetchCourseDetail]);
+
   // Gọi API
   useEffect(() => {
     const fetchCourseDetails = async () => {
       try {
-        // Gọi API lấy thông tin chi tiết khóa học
-        const courseResponse = await fetch(
-          `http://192.168.1.4:3001/course/getDetailByCourseID/${courseId}`,
-        );
-        const courseData = await courseResponse.json();
-        setCourseData(courseData);
-
         // Gọi API lấy đánh giá trung bình của khóa học
         const ratingResponse = await fetch(
-          `http://192.168.1.4:3001/feedbackCourse/averageRatingByCourseID/${courseId}`,
+          `http://localhost:3001/feedbackCourse/averageRatingByCourseID/${courseId}`,
         );
         const ratingData = await ratingResponse.json();
         setAverageRating(ratingData.averageRating); // Lưu dữ liệu đánh giá trung bình
 
         // Gọi API lấy số lượng feedback của khóa học
         const feedbackResponse = await fetch(
-          `http://192.168.1.4:3001/feedbackCourse/countFeedbackByCourseID/${courseId}`,
+          `http://localhost:3001/feedbackCourse/countFeedbackByCourseID/${courseId}`,
         );
         const feedbackData = await feedbackResponse.json();
         setCountFeedback(feedbackData.count); // Lưu dữ liệu số lượng feedback
@@ -50,7 +68,31 @@ const DetailScreen = () => {
     };
 
     fetchCourseDetails(); // Gọi hàm lấy dữ liệu
-  }, [courseId]); // Chỉ gọi lại khi courseId thay đổi
+  }, [courseId, fetchCourseDetail]); // Chỉ gọi lại khi courseId thay đổi
+
+  const createPaymentUrl = async () => {
+    try {
+      const res = await fetch(
+        'http://localhost:3001/payment/create-payment-url',
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            userId: userInfo._id,
+            courseId,
+          }),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+      );
+
+      const data = await res.json();
+
+      return data;
+    } catch (error) {
+      Alert.alert('Có lỗi xảy ra, vui lòng thử lại');
+    }
+  };
 
   // Nếu dữ liệu khóa học chưa được tải, hiển thị Loading
   if (!courseData) {
@@ -64,6 +106,17 @@ const DetailScreen = () => {
   // Destructure dữ liệu để sử dụng
   const {name, img, describe, teacherID} = courseData;
   const teacherName = teacherID ? teacherID.name : 'Unknown Teacher';
+
+  const onJoinCoursePress = async () => {
+    if (isJoinedCourse) {
+      return;
+    }
+
+    const url = await createPaymentUrl();
+    navigation.navigate('CoursePayment', {
+      paymentUrl: url,
+    });
+  };
 
   return (
     <View style={styles.container}>
@@ -132,8 +185,10 @@ const DetailScreen = () => {
       <View style={styles.button}>
         <TouchableOpacity
           style={styles.btn_container}
-          onPress={() => navigation.navigate('CoursePayment')}>
-          <Text style={styles.txtBtn}>Tham gia ngay</Text>
+          onPress={onJoinCoursePress}>
+          <Text style={styles.txtBtn}>
+            {isJoinedCourse ? 'Bắt đầu' : 'Tham gia ngay'}
+          </Text>
         </TouchableOpacity>
       </View>
     </View>

@@ -38,7 +38,7 @@ const HomeScreen = () => {
     useEffect(() => {
         const fetchCourses = async () => {
             try {
-                const response = await axios.get('http://192.168.1.4:3000/subject/getAll');
+                const response = await axios.get('http://localhost:3001/subject/getAll');
                 setSubjects(response.data.map(course => course.name));
             } catch (error) {
                 console.error('Error fetching courses:', error);
@@ -51,7 +51,7 @@ const HomeScreen = () => {
   useEffect(() => {
     const fetchData = async () => {
         try {
-            const response = await fetch('http://192.168.1.4:3000/course/getAll');
+            const response = await fetch('http://localhost:3001/course/getAll');
             const json = await response.json();
             setCardData(json);
         } catch (error) {
@@ -65,7 +65,7 @@ const HomeScreen = () => {
     useEffect(() => {
         const fetchMentors = async () => {
             try {
-                const response = await axios.get('http://192.168.1.4:3000/teacher/getAll');
+                const response = await axios.get('http://localhost:3001/teacher/getAll');
                 console.log(response.data); 
                 setMentors(response.data.map(mentor => ({
                     id: mentor.id ? mentor.id.toString() : '', 

@@ -53,7 +53,7 @@ const ProfileMentor = () => {
   useEffect(() => {
     const fetchMentor = async () => {
       try {
-        const response = await axios.get(`http://192.168.1.4:3001/teacher/getTeacherByID/${_id}`);
+        const response = await axios.get(`http://localhost:3001/teacher/getTeacherByID/${_id}`);
         setMentor(response.data);
         setData(isCourses ? courseDetails : []);
       } catch (error) {
@@ -69,7 +69,7 @@ const ProfileMentor = () => {
   useEffect(() => {
     const fetchFollowerCount = async () => {
       try {
-        const response = await axios.get(`http://192.168.1.4:3001/followTeacher/getFollowerCount/${_id}`);
+        const response = await axios.get(`http://localhost:3001/followTeacher/getFollowerCount/${_id}`);
         setFollowerCount(response.data.followerCount);
       } catch (error) {
         console.error('Error fetching follower count:', error);
@@ -82,7 +82,7 @@ const ProfileMentor = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get(`http://192.168.1.4:3001/user/getAll`);
+        const response = await axios.get(`http://localhost:3001/user/getAll`);
         setUsers(response.data); // Lưu danh sách người dùng
       } catch (error) {
         console.error('Error fetching users:', error);
@@ -95,7 +95,7 @@ const ProfileMentor = () => {
   useEffect(() => {
     const fetchFeedback = async () => {
       try {
-        const response = await axios.get(`http://192.168.1.4:3001/feedbackCourse/getAll`);
+        const response = await axios.get(`http://localhost:3001/feedbackCourse/getAll`);
         const feedbackData = response.data.flatMap(course => 
           course.feedbacks.map(feedback => {
             const user = users.find(user => user._id === feedback.userID); // Tìm thông tin người dùng

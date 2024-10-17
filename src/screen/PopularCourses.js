@@ -13,7 +13,7 @@ const PopularCourses = () => {
     useEffect(() => {
         const fetchCourses = async () => {
             try {
-                const response = await fetch('http://192.168.1.4:3001/subject/getAll');
+                const response = await fetch('http://localhost:3001/subject/getAll');
                 const data = await response.json();
                 // Map to include both name and id
                 setCourses([{ _id: null, name: 'Tất cả' }, ...data]); // Add the default "Tất cả" at the beginning
@@ -31,12 +31,12 @@ const PopularCourses = () => {
             try {
                 let response;
                 if (activeCourse === 'Tất cả') {
-                    response = await fetch('http://192.168.1.4:3001/course/getAll');
+                    response = await fetch('http://localhost:3001/course/getAll');
                 } else {
                     // Get the subject ID based on the active course
                     const subject = courses.find(course => course.name === activeCourse);
                     if (subject) {
-                        response = await fetch(`http://192.168.1.4:3001/course/getCourseBySubjectID/${subject._id}`);
+                        response = await fetch(`http://localhost:3001/course/getCourseBySubjectID/${subject._id}`);
                     }
                 }
 

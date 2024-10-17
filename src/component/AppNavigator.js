@@ -1,6 +1,6 @@
 import React from 'react';
-import { createStackNavigator } from '@react-navigation/stack';
-import { NavigationContainer } from '@react-navigation/native';
+import {createStackNavigator} from '@react-navigation/stack';
+import {NavigationContainer} from '@react-navigation/native';
 import SplashScreen from '../screen/SplashScreen';
 import WelcomeScreen from '../screen/WelcomeScreen';
 import SignUpOrSignIn from '../screen/SignUpOrSignIn';
@@ -32,6 +32,7 @@ import HomeScreen from '../screen/HomeScreen';
 import QuizzCourse from '../screen/QuizzCourse';
 import OtpForgetPassWord from '../screen/OtpForgetPassword';
 import DetailScreen from '../screen/DetailScreen';
+import VNPayPaymentScreen from '../screen/VNPayPaymentScreen';
 import ReviewCourseScreen from '../screen/ReviewCourseScreen';
 
 const Stack = createStackNavigator();
@@ -58,7 +59,7 @@ const AppNavigator = () => {
               },
             },
           },
-          cardStyleInterpolator: ({ current, layouts }) => {
+          cardStyleInterpolator: ({current, layouts}) => {
             return {
               cardStyle: {
                 transform: [
@@ -72,8 +73,7 @@ const AppNavigator = () => {
               },
             };
           },
-        }}
-      >
+        }}>
         <Stack.Screen name="Splash" component={SplashScreen} />
         <Stack.Screen name="Welcome" component={WelcomeScreen} />
         <Stack.Screen name="SignUpOrSignIn" component={SignUpOrSignIn} />
@@ -113,6 +113,7 @@ const AppNavigator = () => {
         <Stack.Screen name="QuizzCourse" component={QuizzCourse} />
         <Stack.Screen name="OtpForgetPassWord" component={OtpForgetPassWord} />
         <Stack.Screen name="Detail" component={DetailScreen} />
+        <Stack.Screen name="CoursePayment" component={VNPayPaymentScreen} />
         <Stack.Screen name="ReviewCourse" component={ReviewCourseScreen} />
       </Stack.Navigator>
     </NavigationContainer>

@@ -29,26 +29,26 @@ const ForgotPassword = () => {
             try {
                 setError('');
                 // Gọi API kiểm tra email
-                const response = await fetch('http://192.168.1.4:3001/user/getAll', {
+                const response = await fetch('http://localhost:3001/user/getAll', {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                 });
-    
+
                 const result = await response.json();
                 const user = result.find(user => user.email === email);
-    
+
                 if (user) {
                     // Gửi mã OTP về email
-                    const otpResponse = await fetch('http://192.168.1.4:3001/user/forgot-password', {
+                    const otpResponse = await fetch('http://localhost:3001/user/forgot-password', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                         },
                         body: JSON.stringify({ email }),
                     });
-    
+
                     if (otpResponse.ok) {
                         const otpData = await otpResponse.json(); // Nhận dữ liệu phản hồi
                         navigation.navigate('OtpForgetPassWord', { email, _id: user._id }); // Chuyển sang màn OtpForgetPassWord
@@ -65,14 +65,14 @@ const ForgotPassword = () => {
             }
         }
     };
-    
-    
+
+
 
     return (
         <View style={styles.container}>
             <View style={styles.header}>
                 <TouchableOpacity onPress={handleBack}>
-                    <Image source={require("../design/image/ic_back.png")} style={styles.imgBack} />
+                    <Image source={require('../design/image/ic_back.png')} style={styles.imgBack} />
                 </TouchableOpacity>
                 <Text style={styles.txtHeader}>Đổi Mật Khẩu</Text>
             </View>
@@ -83,7 +83,7 @@ const ForgotPassword = () => {
                 <Text style={styles.label}>Địa chỉ Email</Text>
                 <View style={[
                     styles.inputContainer,
-                    { borderColor: error ? 'red' : isFocused ? 'black' : '#000' }
+                    { borderColor: error ? 'red' : isFocused ? 'black' : '#000' },
                 ]}>
                     <Image source={require('../design/image/ic_email.png')} style={styles.inputIcon} />
                     <TextInput
@@ -95,7 +95,7 @@ const ForgotPassword = () => {
                         onBlur={() => setIsFocused(false)}
                     />
                 </View>
-                {error ? <Text style={styles.error}>{error}</Text> : <View style={styles.line}></View>}
+                {error ? <Text style={styles.error}>{error}</Text> : <View style={styles.line} />}
             </View>
             <View style={styles.checkContainer}>
                 <TouchableOpacity onPress={handleSignIn}>
@@ -109,9 +109,9 @@ const ForgotPassword = () => {
                 <Text style={styles.txtLogin}>Xác thực OTP</Text>
             </TouchableOpacity>
             <View style={styles.orContainer}>
-                <View style={styles.lineOr}></View>
+                <View style={styles.lineOr} />
                 <Text style={styles.txtOr}>Hoặc</Text>
-                <View style={styles.lineOr}></View>
+                <View style={styles.lineOr} />
             </View>
             <View style={styles.socialButtonsContainer}>
                 <TouchableOpacity style={styles.googleButton}>
@@ -133,16 +133,16 @@ export default ForgotPassword;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#FFFFFF",
+        backgroundColor: '#FFFFFF',
         padding: 20,
     },
     header: {
-        flexDirection: "row",
-        alignItems: "center",
+        flexDirection: 'row',
+        alignItems: 'center',
     },
     txtHeader: {
-        color: "#0D0D0D",
-        fontFamily: "Mulish-ExtraBold",
+        color: '#0D0D0D',
+        fontFamily: 'Mulish-ExtraBold',
         fontSize: 20,
         paddingLeft: 20,
     },
@@ -151,8 +151,8 @@ const styles = StyleSheet.create({
         height: 20,
     },
     imgContainer: {
-        alignItems: "center",
-        justifyContent: "center",
+        alignItems: 'center',
+        justifyContent: 'center',
         marginTop: 40,
     },
     img: {
@@ -161,7 +161,7 @@ const styles = StyleSheet.create({
     },
     label: {
         fontFamily: 'Mulish-ExtraBold',
-        color: "#0D0D0D",
+        color: '#0D0D0D',
         marginVertical: 10,
     },
     inputContainer: {
@@ -184,22 +184,22 @@ const styles = StyleSheet.create({
         marginRight: 10,
     },
     checkContainer: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
         marginVertical: 10,
     },
     txtSignIn: {
         marginLeft: 10,
         fontSize: 16,
-        color: "#000000",
-        fontFamily: "Mulish-Bold",
+        color: '#000000',
+        fontFamily: 'Mulish-Bold',
     },
     txtSignUp: {
         marginLeft: 10,
         fontSize: 16,
-        color: "#FF0000",
-        fontFamily: "Mulish-Bold",
+        color: '#FF0000',
+        fontFamily: 'Mulish-Bold',
     },
     line: {
         height: 1,
@@ -211,27 +211,27 @@ const styles = StyleSheet.create({
         color: 'red',
         marginVertical: 5,
         fontFamily: 'Mulish-Bold',
-        textAlign :'center'
+        textAlign :'center',
     },
     btnLogin: {
-        backgroundColor: "#0961F5",
-        alignItems: "center",
-        justifyContent: "center",
+        backgroundColor: '#0961F5',
+        alignItems: 'center',
+        justifyContent: 'center',
         height: 50,
         borderRadius: 10,
         marginTop: 20,
     },
     txtLogin: {
         fontSize: 17,
-        color: "#FFFFFF",
-        fontFamily: "Mulish-Bold",
+        color: '#FFFFFF',
+        fontFamily: 'Mulish-Bold',
     },
     orContainer: {
-        alignItems: "center",
+        alignItems: 'center',
         marginVertical: 10,
         marginTop: 20,
-        justifyContent: "center",
-        flexDirection: "row",
+        justifyContent: 'center',
+        flexDirection: 'row',
     },
     lineOr: {
         height: 1,
@@ -251,8 +251,8 @@ const styles = StyleSheet.create({
     googleButton: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: "#FFFFFF",
-        borderColor: "#000000",
+        backgroundColor: '#FFFFFF',
+        borderColor: '#000000',
         borderWidth: 1,
         paddingHorizontal: 20,
         paddingVertical: 3,
@@ -261,7 +261,7 @@ const styles = StyleSheet.create({
     facebookButton: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: "#1877F2",
+        backgroundColor: '#1877F2',
         paddingHorizontal: 20,
         paddingVertical: 3,
         borderRadius: 10,
@@ -274,11 +274,11 @@ const styles = StyleSheet.create({
     socialTextFB: {
         fontFamily: 'Mulish-Bold',
         fontSize: 13,
-        color: "#FFFFFF",
+        color: '#FFFFFF',
     },
     socialTextGG: {
         fontSize: 16,
         fontFamily: 'Mulish-Bold',
-        color: "#191B28",
+        color: '#191B28',
     },
 });

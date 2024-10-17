@@ -26,7 +26,7 @@ const ProfileScreen = () => {
     const fetchUserData = async () => {
       try {
      
-        const response = await fetch(`http://192.168.1.4:3001/user/getUserByID/${userId}`);
+        const response = await fetch(`http://localhost:3001/user/getUserByID/${userId}`);
         const user = await response.json(); 
 
         if (user) {

@@ -78,7 +78,7 @@ const PasswordNew = () => {
         // Proceed with API call if valid
         if (valid) {
             try {
-                const response = await fetch(`http://192.168.1.4:3001/user/reset-password/${_id}`, {
+                const response = await fetch(`http://localhost:3001/user/reset-password/${_id}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',

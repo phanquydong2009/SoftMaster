@@ -13,7 +13,7 @@ const PopularCourses = () => {
     useEffect(() => {
         const fetchCourses = async () => {
             try {
-                const response = await fetch('http://192.168.1.4:3001/subject/getAll');
+                const response = await fetch('http://localhost:3001/subject/getAll');
                 const data = await response.json();
                 // Thêm môn "Tất cả" vào đầu danh sách
                 setCourses([{ _id: null, name: 'Tất cả' }, ...data]);
@@ -31,12 +31,12 @@ const PopularCourses = () => {
             try {
                 let response;
                 if (activeCourse === 'Tất cả') {
-                    response = await fetch('http://192.168.1.4:3001/course/getAll');
+                    response = await fetch('http://localhost:3001/course/getAll');
                 } else {
                     // Lấy ID môn học dựa trên khóa học đang hoạt động
                     const subject = courses.find(course => course.name === activeCourse);
                     if (subject) {
-                        response = await fetch(`http://192.168.1.4:3001/course/getCourseBySubjectID/${subject._id}`);
+                        response = await fetch(`http://localhost:3001/course/getCourseBySubjectID/${subject._id}`);
                     }
                 }
 

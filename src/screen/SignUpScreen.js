@@ -92,11 +92,11 @@ const SignUpScreen = () => {
 
     if (name === '' || email === '' || password === '' || confirmPassword === '' || phone === '') {
       setErrorText('Vui lòng điền đầy đủ thông tin!');
-      if (name === '') setNameBorderColor('#FF0000');
-      if (email === '') setEmailBorderColor('#FF0000');
-      if (password === '') setPasswordBorderColor('#FF0000');
-      if (confirmPassword === '') setConfirmPasswordBorderColor('#FF0000');
-      if (phone === '') setPhoneBorderColor('#FF0000'); // Validate phone number
+      if (name === '') {setNameBorderColor('#FF0000');}
+      if (email === '') {setEmailBorderColor('#FF0000');}
+      if (password === '') {setPasswordBorderColor('#FF0000');}
+      if (confirmPassword === '') {setConfirmPasswordBorderColor('#FF0000');}
+      if (phone === '') {setPhoneBorderColor('#FF0000');} // Validate phone number
       valid = false;
     }
 
@@ -105,7 +105,7 @@ const SignUpScreen = () => {
 
       try {
         console.log('Sending registration request...');
-        const response = await axios.post('http://192.168.1.4:3001/user/register', {
+        const response = await axios.post('http://localhost:3001/user/register', {
           name,
           email,
           password,
@@ -114,7 +114,7 @@ const SignUpScreen = () => {
 
         console.log('Register Response:', response.data);
 
-        if (response.data.message === "Mã OTP đã được gửi đến email của bạn") {
+        if (response.data.message === 'Mã OTP đã được gửi đến email của bạn') {
           // Navigate to OTP screen after successful registration
           navigation.navigate('Otp', { email });
         } else {
@@ -135,7 +135,7 @@ const SignUpScreen = () => {
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.navigate('SignUpOrSignIn')}>
-            <Image source={require("../design/image/ic_back.png")} style={styles.imgBack} />
+            <Image source={require('../design/image/ic_back.png')} style={styles.imgBack} />
           </TouchableOpacity>
           <Text style={styles.txtHeader}>Đăng kí</Text>
         </View>
@@ -248,16 +248,16 @@ const SignUpScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: '#FFFFFF',
     padding: 20,
   },
   header: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   txtHeader: {
-    color: "#0D0D0D",
-    fontFamily: "Mulish-ExtraBold",
+    color: '#0D0D0D',
+    fontFamily: 'Mulish-ExtraBold',
     fontSize: 20,
     paddingLeft: 20,
   },
@@ -266,8 +266,8 @@ const styles = StyleSheet.create({
     height: 20,
   },
   imgContainer: {
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
 
 
   },
@@ -281,8 +281,8 @@ const styles = StyleSheet.create({
   label: {
     fontFamily: 'Mulish-ExtraBold',
     color: '14',
-    color: "#0D0D0D",
-    marginVertical: 8
+    color: '#0D0D0D',
+    marginVertical: 8,
   },
   inputContainer: {
     flexDirection: 'row',
@@ -307,37 +307,37 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     padding: 2,
-    marginRight: 10
+    marginRight: 10,
   },
   eyeIcon: {
     width: 25,
     height: 25,
   },
   errorContainer: {
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   errorText: {
-    color: "#FF0000",
+    color: '#FF0000',
     fontSize: 14,
     textAlign: 'center',
     marginTop: 10,
-    fontFamily: "Mulish-Bold"
+    fontFamily: 'Mulish-Bold',
   },
 
 
   btnLogin: {
-    backgroundColor: "#0961F5",
-    alignItems: "center",
-    justifyContent: "center",
+    backgroundColor: '#0961F5',
+    alignItems: 'center',
+    justifyContent: 'center',
     height: 50,
     borderRadius: 10,
     marginTop: 20,
   },
   txtLogin: {
     fontSize: 17,
-    color: "#FFFFFF",
-    fontFamily: "Mulish-Bold",
+    color: '#FFFFFF',
+    fontFamily: 'Mulish-Bold',
   },
 
   socialButtonsContainer: {
@@ -348,8 +348,8 @@ const styles = StyleSheet.create({
   googleButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: "#FFFFFF",
-    borderColor: "#000000",
+    backgroundColor: '#FFFFFF',
+    borderColor: '#000000',
     borderWidth: 1,
     paddingHorizontal: 20,
     paddingVertical: 3,
@@ -358,7 +358,7 @@ const styles = StyleSheet.create({
   facebookButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: "#1877F2",
+    backgroundColor: '#1877F2',
     paddingHorizontal: 20,
     paddingVertical: 3,
     borderRadius: 10,
@@ -371,14 +371,14 @@ const styles = StyleSheet.create({
   socialTextFB: {
     fontFamily: 'Mulish-Bold',
     fontSize: 13,
-    color: "#FFFFFF",
+    color: '#FFFFFF',
   },
   socialTextGG: {
     fontSize: 16,
     fontFamily: 'Mulish-Bold',
-    color: "#191B28",
+    color: '#191B28',
   },
 
 
 });
-export default SignUpScreen; 
+export default SignUpScreen;

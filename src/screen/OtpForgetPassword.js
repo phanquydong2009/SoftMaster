@@ -43,7 +43,7 @@ const OtpForgetPassWord = () => {
                 return;
             }
 
-            const response = await fetch(`http://192.168.1.4:3001/user/verify-otp-forgotpass/${route.params._id}`, {
+            const response = await fetch(`http://localhost:3001/user/verify-otp-forgotpass/${route.params._id}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -61,7 +61,7 @@ const OtpForgetPassWord = () => {
                 return;
             }
 
-            const allUsersResponse = await fetch('http://192.168.1.4:3000/user/getAll');
+            const allUsersResponse = await fetch('http://localhost:3001/user/getAll');
             const allUsersData = await allUsersResponse.json();
 
             const user = allUsersData.find(user => user.email === email);

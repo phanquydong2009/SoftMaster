@@ -30,7 +30,7 @@ const OtpScreen = () => {
 
     const handleConfirm = async () => {
         try {
-            const response = await fetch('http://192.168.1.4:3001/user/verify-otp-register', { 
+            const response = await fetch('http://localhost:3001/user/verify-otp-register', { 
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, otp: otp.join('') }),

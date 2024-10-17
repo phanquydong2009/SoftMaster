@@ -19,7 +19,7 @@ const EditProfile = () => {
   const fetchUserData = async () => {
     setLoading(true); // Start loading
     try {
-      const response = await fetch(`http://192.168.1.4:3001/user/getUserByID/${userId}`);
+      const response = await fetch(`http://localhost:3001/user/getUserByID/${userId}`);
       const data = await response.json();
       if (response.ok) {
         setName(data.name || '');
@@ -54,7 +54,7 @@ const EditProfile = () => {
     
     setLoading(true); // Start loading
     try {
-      const response = await fetch(`http://192.168.1.4:3001/user/update/${userId}`, {
+      const response = await fetch(`http://localhost:3001/user/update/${userId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

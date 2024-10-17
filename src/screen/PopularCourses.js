@@ -4,28 +4,28 @@ import { useNavigation } from '@react-navigation/native';
 
 const PopularCourses = () => {
     const navigation = useNavigation();
-    const [activeCourse, setActiveCourse] = useState('Tất cả');
-    const [activeBookmarks, setActiveBookmarks] = useState({});
-    const [courses, setCourses] = useState([]);
-    const [courseDetails, setCourseDetails] = useState([]);
+    const [activeCourse, setActiveCourse] = useState('Tất cả'); // Trạng thái khóa học đang hoạt động
+    const [activeBookmarks, setActiveBookmarks] = useState({}); // Trạng thái bookmark cho các khóa học
+    const [courses, setCourses] = useState([]); // Danh sách các khóa học
+    const [courseDetails, setCourseDetails] = useState([]); // Chi tiết khóa học
 
-    // Fetch the subject list from API
+    // Lấy danh sách môn học từ API
     useEffect(() => {
         const fetchCourses = async () => {
             try {
                 const response = await fetch('http://localhost:3001/subject/getAll');
                 const data = await response.json();
-                // Map to include both name and id
-                setCourses([{ _id: null, name: 'Tất cả' }, ...data]); // Add the default "Tất cả" at the beginning
+                // Thêm môn "Tất cả" vào đầu danh sách
+                setCourses([{ _id: null, name: 'Tất cả' }, ...data]);
             } catch (error) {
-                console.error('Error fetching courses:', error);
+                console.error('Lỗi khi lấy danh sách môn học:', error);
             }
         };
 
         fetchCourses();
     }, []);
 
-    // Fetch course details based on active course
+    // Lấy chi tiết khóa học dựa trên khóa học đang hoạt động
     useEffect(() => {
         const fetchCourseDetails = async () => {
             try {
@@ -33,7 +33,7 @@ const PopularCourses = () => {
                 if (activeCourse === 'Tất cả') {
                     response = await fetch('http://localhost:3001/course/getAll');
                 } else {
-                    // Get the subject ID based on the active course
+                    // Lấy ID môn học dựa trên khóa học đang hoạt động
                     const subject = courses.find(course => course.name === activeCourse);
                     if (subject) {
                         response = await fetch(`http://localhost:3001/course/getCourseBySubjectID/${subject._id}`);
@@ -45,17 +45,19 @@ const PopularCourses = () => {
                     setCourseDetails(data);
                 }
             } catch (error) {
-                console.error('Error fetching course details:', error);
+                console.error('Lỗi khi lấy chi tiết khóa học:', error);
             }
         };
 
         fetchCourseDetails();
-    }, [activeCourse, courses]); // Add courses as a dependency
+    }, [activeCourse, courses]); // Thêm courses vào danh sách phụ thuộc
 
+    // Hàm quay lại màn hình trước
     const handleBack = () => {
         navigation.goBack();
     };
-   
+
+    // Hàm chuyển đổi trạng thái bookmark cho khóa học
     const handleBookmarkToggle = (id) => {
         setActiveBookmarks(prevState => ({
             ...prevState,
@@ -63,15 +65,16 @@ const PopularCourses = () => {
         }));
     };
 
+    // Hàm hiển thị từng item khóa học
     const renderCourseItem = ({ item }) => {
-        const isActive = item.name === activeCourse;
+        const isActive = item.name === activeCourse; // Kiểm tra khóa học đang hoạt động
         return (
-            <TouchableOpacity 
+            <TouchableOpacity
                 style={[
                     styles.courseItem,
                     { backgroundColor: isActive ? '#167F71' : '#E8F1FF' }
                 ]}
-                onPress={() => setActiveCourse(item.name)}
+                onPress={() => setActiveCourse(item.name)} // Cập nhật khóa học đang hoạt động
             >
                 <Text
                     style={[
@@ -85,13 +88,17 @@ const PopularCourses = () => {
         );
     };
 
+    // Hàm hiển thị từng item chi tiết khóa học
     const renderDetailItem = ({ item }) => {
-        const isBookmarked = activeBookmarks[item._id];
-        
+        const isBookmarked = activeBookmarks[item._id]; // Kiểm tra xem khóa học có được bookmark hay không
+
+        // Hàm điều hướng đến màn hình chi tiết khóa học
         const handleDetail = () => {
-            navigation.navigate('Detail', { courseId: item._id }); 
+            console.log("Course ID truyền qua là:", item._id); // Log ra ID của khóa học
+            navigation.navigate('Detail', { courseId: item._id });
         };
-    
+
+
         return (
             <TouchableOpacity onPress={handleDetail} style={styles.detailItem}>
                 <Image source={{ uri: item.img }} style={styles.detailImage} />
@@ -109,15 +116,15 @@ const PopularCourses = () => {
                             />
                         </TouchableOpacity>
                     </View>
-    
+
                     <Text style={styles.detailDescription} numberOfLines={2} ellipsizeMode='tail'>
                         {item.describe}
                     </Text>
-    
+
                     <Text style={styles.detailPrice}>
                         Giá: {item.price} VND
                     </Text>
-    
+
                     <Text style={styles.detailCreatedAt}>
                         Ngày tạo: {new Date(item.createdAt).toLocaleDateString()}
                     </Text>
@@ -125,7 +132,7 @@ const PopularCourses = () => {
             </TouchableOpacity>
         );
     };
-    
+
     return (
         <View style={styles.container}>
             <View style={styles.header}>
@@ -139,7 +146,7 @@ const PopularCourses = () => {
                 <FlatList
                     data={courses}
                     renderItem={renderCourseItem}
-                    keyExtractor={(item) => item._id ? item._id.toString() : item.name} // Use ID if available
+                    keyExtractor={(item) => item._id ? item._id.toString() : item.name} // Sử dụng ID nếu có
                     horizontal
                     showsHorizontalScrollIndicator={false}
                     contentContainerStyle={styles.flatListContainer}
@@ -150,7 +157,7 @@ const PopularCourses = () => {
                 <FlatList
                     data={courseDetails}
                     renderItem={renderDetailItem}
-                    keyExtractor={(item) => item._id.toString()} 
+                    keyExtractor={(item) => item._id.toString()}
                     contentContainerStyle={styles.detailsContainer}
                 />
             </View>
@@ -165,7 +172,7 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         justifyContent: 'space-between',
         alignItems: 'center',
-    
+
     },
     flatListWrapper: {
         justifyContent: 'center',
@@ -184,7 +191,7 @@ const styles = StyleSheet.create({
         fontSize: 15,
     },
     detailsWrapper: {
-        marginTop:10,
+        marginTop: 10,
     },
     detailsContainer: {
         paddingVertical: 10,
@@ -212,17 +219,17 @@ const styles = StyleSheet.create({
     },
     detailContent: {
         flex: 1,
-   
+
     },
     detailNameCourse: {
         fontFamily: 'Mulish-ExtraBold',
         fontSize: 15,
         color: '#0961F5',
         marginBottom: 5,
-        width :150,
+        width: 150,
     },
-    bookmarkIcon : {
-        width : 30, height :30,
+    bookmarkIcon: {
+        width: 30, height: 30,
     },
     detailDescription: {
         fontFamily: 'Mulish-Bold',

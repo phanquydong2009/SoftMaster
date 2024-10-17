@@ -33,6 +33,7 @@ import QuizzCourse from '../screen/QuizzCourse';
 import OtpForgetPassWord from '../screen/OtpForgetPassword';
 import DetailScreen from '../screen/DetailScreen';
 import VNPayPaymentScreen from '../screen/VNPayPaymentScreen';
+import ReviewCourseScreen from '../screen/ReviewCourseScreen';
 
 const Stack = createStackNavigator();
 
@@ -113,6 +114,7 @@ const AppNavigator = () => {
         <Stack.Screen name="OtpForgetPassWord" component={OtpForgetPassWord} />
         <Stack.Screen name="Detail" component={DetailScreen} />
         <Stack.Screen name="CoursePayment" component={VNPayPaymentScreen} />
+        <Stack.Screen name="ReviewCourse" component={ReviewCourseScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

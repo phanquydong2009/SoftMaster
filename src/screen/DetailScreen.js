@@ -6,11 +6,64 @@ import {
   Image,
   ScrollView,
 } from 'react-native';
-import React from 'react';
-import {useNavigation} from '@react-navigation/native';
+import React, {useEffect, useState} from 'react'; // Import useEffect and useState
+import {useNavigation, useRoute} from '@react-navigation/native';
 
 const DetailScreen = () => {
   const navigation = useNavigation(); // Hook điều hướng
+  const route = useRoute(); // Hook để lấy thông tin từ route
+  const {courseId} = route.params; // Lấy courseId từ params
+
+  const [courseData, setCourseData] = useState(null); // State để lưu dữ liệu khóa học
+  const [averageRating, setAverageRating] = useState(null); // State để lưu đánh giá trung bình
+  const [countFeedback, setCountFeedback] = useState(null); // State để lưu số lượng feedback
+  const handleNavigateToReview = () => {
+    navigation.navigate('ReviewCourse', {courseId});
+  };
+  // Gọi API
+  useEffect(() => {
+    const fetchCourseDetails = async () => {
+      try {
+        // Gọi API lấy thông tin chi tiết khóa học
+        const courseResponse = await fetch(
+          `http://192.168.1.4:3001/course/getDetailByCourseID/${courseId}`,
+        );
+        const courseData = await courseResponse.json();
+        setCourseData(courseData);
+
+        // Gọi API lấy đánh giá trung bình của khóa học
+        const ratingResponse = await fetch(
+          `http://192.168.1.4:3001/feedbackCourse/averageRatingByCourseID/${courseId}`,
+        );
+        const ratingData = await ratingResponse.json();
+        setAverageRating(ratingData.averageRating); // Lưu dữ liệu đánh giá trung bình
+
+        // Gọi API lấy số lượng feedback của khóa học
+        const feedbackResponse = await fetch(
+          `http://192.168.1.4:3001/feedbackCourse/countFeedbackByCourseID/${courseId}`,
+        );
+        const feedbackData = await feedbackResponse.json();
+        setCountFeedback(feedbackData.count); // Lưu dữ liệu số lượng feedback
+      } catch (error) {
+        console.error('Error fetching course details or feedback:', error);
+      }
+    };
+
+    fetchCourseDetails(); // Gọi hàm lấy dữ liệu
+  }, [courseId]); // Chỉ gọi lại khi courseId thay đổi
+
+  // Nếu dữ liệu khóa học chưa được tải, hiển thị Loading
+  if (!courseData) {
+    return (
+      <View style={styles.container}>
+        <Text>Loading...</Text>
+      </View>
+    );
+  }
+
+  // Destructure dữ liệu để sử dụng
+  const {name, img, describe, teacherID} = courseData;
+  const teacherName = teacherID ? teacherID.name : 'Unknown Teacher';
 
   return (
     <View style={styles.container}>
@@ -25,59 +78,57 @@ const DetailScreen = () => {
       </View>
       <View style={styles.top}>
         <View style={styles.banner}>
-          <Image
-            source={require('../design/image/webDetail.png')}
-            style={styles.imgBanner}
-          />
-          <Text style={styles.nameCourse}>
-            The main web development concepts you should know
-          </Text>
+          <Image source={{uri: img}} style={styles.imgBanner} />
+          <Text style={styles.nameCourse}>{name}</Text>
         </View>
         <View style={styles.infoTeacher}>
           <Image
-            source={require('../design/image/mentor1.png')}
+            source={{uri: teacherID?.avatar}}
             style={styles.avatarTeacher}
           />
-          <Text style={styles.nameTeacher}>Phan Quy Dong</Text>
+          <Text style={styles.nameTeacher}>{teacherName}</Text>
         </View>
         <View style={styles.infoCourse}>
           <Text style={styles.txtInfo}>Số bài học 7 quiz & 2 Video</Text>
-          <Text style={styles.txtInfo}>Giá : 999.999 VND</Text>
+          <Text style={styles.txtInfo}>Giá: {courseData.price} VND</Text>
         </View>
         <View style={styles.data_container}>
+          <TouchableOpacity>
+            <View style={styles.column}>
+              <Text style={styles.txt_number}>99 học sinh</Text>
+              <Text style={styles.title}>Đã tham gia</Text>
+            </View>
+          </TouchableOpacity>
           <View style={styles.column}>
-            <Text style={styles.txt_number}>99 học sinh</Text>
-            <Text style={styles.title}>Đã tham gia</Text>
-          </View>
-          <View style={styles.column}>
-            <Text style={styles.txt_number}>4.5 ⭐</Text>
+            <Text style={styles.txt_number}>
+              {averageRating
+                ? `${parseFloat(averageRating).toFixed(1)} ⭐`
+                : '0 ⭐'}
+            </Text>
             <Text style={styles.title}>Đánh giá</Text>
           </View>
+
           <View style={styles.column}>
-            <Text style={styles.txt_number}>999</Text>
+            <Text style={styles.txt_number}>
+              {countFeedback ? countFeedback : '0'}
+            </Text>
             <Text style={styles.title}>Nhận xét</Text>
+
+            <TouchableOpacity onPress={handleNavigateToReview}>
+              <Text style={styles.viewReviewsButton}>Xem đánh giá</Text>
+            </TouchableOpacity>
           </View>
         </View>
         <View style={styles.line} />
         {/* Scrollable description */}
         <View style={styles.describe}>
           <ScrollView nestedScrollEnabled={true} style={styles.scrollDescribe}>
-            <Text style={styles.txt_describe}>
-              Phát triển web là quá trình xây dựng và duy trì các trang web hoặc
-              ứng dụng web nhằm phục vụ cho Internet (World Wide Web) hoặc mạng
-              nội bộ (mạng riêng). Công việc này liên quan đến nhiều lĩnh vực
-              khác nhau, từ thiết kế và phát triển giao diện người dùng (UI/UX),
-              xây dựng cấu trúc cơ sở dữ liệu, đến quản lý nội dung và tích hợp
-              các tính năng phức tạp như thanh toán trực tuyến, bảo mật, và tối
-              ưu hóa tốc độ tải trang. Phát triển web có thể bao gồm nhiều cấp
-              độ khác nhau, từ việc xây dựng các trang web đơn giản với văn bản
-              thuần túy (HTML, CSS), ....(Xem thêm)
-            </Text>
+            <Text style={styles.txt_describe}>{describe}</Text>
           </ScrollView>
         </View>
       </View>
 
-      {/* Button */}
+      {/* Nút Tham gia ngay */}
       <View style={styles.button}>
         <TouchableOpacity
           style={styles.btn_container}
@@ -93,7 +144,8 @@ export default DetailScreen;
 
 const styles = StyleSheet.create({
   button: {
-    marginVertical: 20,
+    marginBottom: 20,
+    marginTop: 10,
   },
   txtBtn: {
     color: '#FFFFFF',

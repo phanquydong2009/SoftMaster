@@ -43,12 +43,12 @@ const ProfileMentor = () => {
 
   const [mentor, setMentor] = useState(null);
   const [followerCount, setFollowerCount] = useState(null);
-  const [feedbackCount, setFeedbackCount] = useState(0); // New state variable for feedback count
+  const [feedbackCount, setFeedbackCount] = useState(0);
   const [isCourses, setIsCourses] = useState(true);
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [users, setUsers] = useState([]);
-
+  const [courseCount, setCourseCount] = useState(0); // Thêm state cho courseCount
   // Lấy dữ liệu giảng viên từ API
   useEffect(() => {
     const fetchMentor = async () => {
@@ -124,6 +124,19 @@ const ProfileMentor = () => {
       fetchFeedback();
     }
   }, [_id, isCourses, users]);
+
+    // Gọi API để lấy số lượng khóa học của giảng viên
+    useEffect(() => {
+      const fetchCourseCount = async () => {
+        try {
+          const response = await axios.get(`http://192.168.1.4:3001/course/getCourseCountByTeacher/${_id}`);
+          setCourseCount(response.data.courseCount); // Cập nhật courseCount
+        } catch (error) {
+          console.error('Error fetching course count:', error);
+        }
+      };
+      fetchCourseCount();
+    }, [_id]);
 //chuyển trang 
   const handleBack = () => {
     navigation.goBack();
@@ -216,7 +229,7 @@ const ProfileMentor = () => {
       </View>
       <View style={styles.follow_container}>
         <View style={styles.column_item}>
-          <Text style={styles.item_numberCourse}>39</Text>
+        <Text style={styles.item_numberCourse}>{courseCount}</Text> 
           <Text style={styles.item_title}>Khóa học</Text>
         </View>
         <View style={styles.column_item}>

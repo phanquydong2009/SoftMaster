@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Image, TextInput, Platform } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import BASE_URL from '../component/apiConfig'; 
 
 const OtpForgetPassWord = () => {
     const navigation = useNavigation();
@@ -43,7 +44,7 @@ const OtpForgetPassWord = () => {
                 return;
             }
 
-            const response = await fetch(`http://localhost:3001/user/verify-otp-forgotpass/${route.params._id}`, {
+            const response = await fetch(`${BASE_URL}/user/verify-otp-forgotpass/${route.params._id}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -61,7 +62,7 @@ const OtpForgetPassWord = () => {
                 return;
             }
 
-            const allUsersResponse = await fetch('http://localhost:3001/user/getAll');
+            const allUsersResponse = await fetch(`${BASE_URL}/user/getAll`);
             const allUsersData = await allUsersResponse.json();
 
             const user = allUsersData.find(user => user.email === email);

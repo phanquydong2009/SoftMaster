@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, TextInput } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-
+import BASE_URL from '../component/apiConfig';
 const ForgotPassword = () => {
     const [email, setEmail] = useState('');
     const [isFocused, setIsFocused] = useState(false);
@@ -29,7 +29,7 @@ const ForgotPassword = () => {
             try {
                 setError('');
                 // Gọi API kiểm tra email
-                const response = await fetch('http://localhost:3001/user/getAll', {
+                const response = await fetch(`${BASE_URL}/user/getAll`, { 
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -41,7 +41,7 @@ const ForgotPassword = () => {
 
                 if (user) {
                     // Gửi mã OTP về email
-                    const otpResponse = await fetch('http://localhost:3001/user/forgot-password', {
+                    const otpResponse = await fetch(`${BASE_URL}/user/forgot-password`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',

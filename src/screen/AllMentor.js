@@ -2,6 +2,7 @@ import { StyleSheet, Text, View, TouchableOpacity, Image, TextInput, FlatList, A
 import React, { useEffect, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
+import BASE_URL from '../component/apiConfig';
 
 const AllMentor = () => {
   const navigation = useNavigation();
@@ -14,7 +15,8 @@ const AllMentor = () => {
 
     const fetchMentors = async () => {
       try {
-        const response = await axios.get('http://localhost:3001/teacher/getAll');
+        const response = await axios.get(`${BASE_URL}/teacher/getAll`);
+
         setMentors(response.data);
         setFilteredMentors(response.data);  
       } catch (error) {

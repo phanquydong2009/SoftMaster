@@ -3,6 +3,7 @@ import React, { useState, useRef } from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import Modal from 'react-native-modal';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import BASE_URL from '../component/apiConfig';
 
 const OtpScreen = () => {
     const navigation = useNavigation();
@@ -30,7 +31,7 @@ const OtpScreen = () => {
 
     const handleConfirm = async () => {
         try {
-            const response = await fetch('http://localhost:3001/user/verify-otp-register', { 
+            const response = await fetch(`${BASE_URL}/user/verify-otp-register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, otp: otp.join('') }),

@@ -2,6 +2,7 @@ import {useNavigation, useRoute} from '@react-navigation/native';
 import React from 'react';
 import {Alert, Text, View} from 'react-native';
 import {WebView} from 'react-native-webview';
+import BASE_URL from '../component/apiConfig';
 
 const VNPayPaymentScreen = () => {
   const navigation = useNavigation();
@@ -10,7 +11,7 @@ const VNPayPaymentScreen = () => {
 
   const handleUpdateStatus = async ({paymentId, status}) => {
     try {
-      await fetch('http://localhost:3001/payment/update-payment-status', {
+      await fetch(`${BASE_URL}/payment/update-payment-status`, {
         method: 'POST',
         body: JSON.stringify({
           paymentId,

@@ -7,18 +7,19 @@ import {
   ScrollView,
   Alert,
 } from 'react-native';
-import React, {useCallback, useEffect, useState} from 'react'; // Import useEffect and useState
+import React, {useCallback, useEffect, useState} from 'react'; 
 import {useIsFocused, useNavigation, useRoute} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import BASE_URL from '../component/apiConfig';
 
 const DetailScreen = () => {
-  const navigation = useNavigation(); // Hook điều hướng
-  const route = useRoute(); // Hook để lấy thông tin từ route
-  const {courseId} = route.params; // Lấy courseId từ params
+  const navigation = useNavigation();
+  const route = useRoute(); 
+  const {courseId} = route.params; 
 
-  const [courseData, setCourseData] = useState(null); // State để lưu dữ liệu khóa học
-  const [averageRating, setAverageRating] = useState(null); // State để lưu đánh giá trung bình
-  const [countFeedback, setCountFeedback] = useState(null); // State để lưu số lượng feedback
+  const [courseData, setCourseData] = useState(null); 
+  const [averageRating, setAverageRating] = useState(null); 
+  const [countFeedback, setCountFeedback] = useState(null); 
   const [userInfo, setUserInfo] = useState(null);
   const handleNavigateToReview = () => {
     navigation.navigate('ReviewCourse', {courseId});
@@ -32,8 +33,9 @@ const DetailScreen = () => {
     setUserInfo(user);
 
     const courseResponse = await fetch(
-      `http://localhost:3001/course/getDetailByCourseID/${courseId}/?userId=${user._id}`,
+      `${BASE_URL}/course/getDetailByCourseID/${courseId}/?userId=${user._id}`, 
     );
+    
     const courseData = await courseResponse.json();
     setCourseData(courseData);
   }, [courseId]);
@@ -45,20 +47,19 @@ const DetailScreen = () => {
     fetchCourseDetail();
   }, [isFocused, fetchCourseDetail]);
 
-  // Gọi API
   useEffect(() => {
     const fetchCourseDetails = async () => {
       try {
         // Gọi API lấy đánh giá trung bình của khóa học
         const ratingResponse = await fetch(
-          `http://localhost:3001/feedbackCourse/averageRatingByCourseID/${courseId}`,
+          `${BASE_URL}/feedbackCourse/averageRatingByCourseID/${courseId}`, // Sử dụng BASE_URL
         );
         const ratingData = await ratingResponse.json();
         setAverageRating(ratingData.averageRating); // Lưu dữ liệu đánh giá trung bình
-
+  
         // Gọi API lấy số lượng feedback của khóa học
         const feedbackResponse = await fetch(
-          `http://localhost:3001/feedbackCourse/countFeedbackByCourseID/${courseId}`,
+          `${BASE_URL}/feedbackCourse/countFeedbackByCourseID/${courseId}`, // Sử dụng BASE_URL
         );
         const feedbackData = await feedbackResponse.json();
         setCountFeedback(feedbackData.count); // Lưu dữ liệu số lượng feedback
@@ -66,14 +67,15 @@ const DetailScreen = () => {
         console.error('Error fetching course details or feedback:', error);
       }
     };
-
+  
     fetchCourseDetails(); // Gọi hàm lấy dữ liệu
   }, [courseId, fetchCourseDetail]); // Chỉ gọi lại khi courseId thay đổi
+  
 
   const createPaymentUrl = async () => {
     try {
       const res = await fetch(
-        'http://localhost:3001/payment/create-payment-url',
+        `${BASE_URL}/payment/create-payment-url`, 
         {
           method: 'POST',
           body: JSON.stringify({
@@ -85,14 +87,15 @@ const DetailScreen = () => {
           },
         },
       );
-
+  
       const data = await res.json();
-
+  
       return data;
     } catch (error) {
       Alert.alert('Có lỗi xảy ra, vui lòng thử lại');
     }
   };
+  
 
   // Nếu dữ liệu khóa học chưa được tải, hiển thị Loading
   if (!courseData) {

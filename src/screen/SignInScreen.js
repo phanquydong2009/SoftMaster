@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, Image, TouchableOpacity, TextInput, Switch } fr
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 
+import BASE_URL from '../component/apiConfig';
+
 const SignInScreen = () => {
     const navigation = useNavigation();
     const [isSwitchEnabled, setSwitchEnabled] = useState(false);
@@ -67,17 +69,17 @@ const SignInScreen = () => {
 
         // Gọi API getAll để kiểm tra email
         try {
-            const response = await fetch('http://localhost:3001/user/getAll');
+            const response = await fetch(`${BASE_URL}/user/getAll`); 
             const users = await response.json();
-            console.log('Users from API:', users); // Log danh sách người dùng từ API
+            console.log('Users from API:', users);
 
             const user = users.find(user => user.email === email);
 
             if (user) {
-                console.log('User found:', user); // Log thông tin người dùng tìm thấy
+                console.log('User found:', user); 
 
                 // Nếu tìm thấy email, gọi API login
-                const loginResponse = await fetch('http://localhost:3001/user/login', {
+                const loginResponse = await fetch(`${BASE_URL}/user/login`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

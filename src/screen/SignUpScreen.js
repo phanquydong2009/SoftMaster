@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
+import BASE_URL from '../component/apiConfig'; 
+
 
 const SignUpScreen = () => {
   const navigation = useNavigation();
@@ -105,7 +107,7 @@ const SignUpScreen = () => {
 
       try {
         console.log('Sending registration request...');
-        const response = await axios.post('http://localhost:3001/user/register', {
+        const response = await axios.post(`${BASE_URL}/user/register`, { 
           name,
           email,
           password,

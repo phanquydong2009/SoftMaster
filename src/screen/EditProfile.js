@@ -1,6 +1,7 @@
 import { Image, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View, Alert, ActivityIndicator } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import BASE_URL from '../component/apiConfig';
 
 const EditProfile = () => {
   const navigation = useNavigation();
@@ -19,7 +20,8 @@ const EditProfile = () => {
   const fetchUserData = async () => {
     setLoading(true); // Start loading
     try {
-      const response = await fetch(`http://localhost:3001/user/getUserByID/${userId}`);
+      const response = await fetch(`${BASE_URL}/user/getUserByID/${userId}`);
+
       const data = await response.json();
       if (response.ok) {
         setName(data.name || '');
@@ -54,7 +56,8 @@ const EditProfile = () => {
     
     setLoading(true); // Start loading
     try {
-      const response = await fetch(`http://localhost:3001/user/update/${userId}`, {
+      const response = await fetch(`${BASE_URL}/user/update/${userId}`, {
+
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

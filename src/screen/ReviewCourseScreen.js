@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import {useRoute, useNavigation} from '@react-navigation/native';
+import BASE_URL from '../component/apiConfig';
 
 const ReviewCourseScreen = () => {
   const route = useRoute();
@@ -23,8 +24,9 @@ const ReviewCourseScreen = () => {
     try {
       // Gọi API để lấy feedbacks theo courseId
       const response = await fetch(
-        `http://localhost:3001/feedbackCourse/getFeedbackByCourseID/${courseId}`,
+        `${BASE_URL}/feedbackCourse/getFeedbackByCourseID/${courseId}`
       );
+      
       const feedbackData = await response.json();
 
       if (!Array.isArray(feedbackData)) {
@@ -37,8 +39,9 @@ const ReviewCourseScreen = () => {
         feedbackData.map(async feedback => {
           // Gọi API lấy thông tin người dùng theo userID
           const userResponse = await fetch(
-            `http://localhost:3001/user/getUserByID/${feedback.userID}`,
+            `${BASE_URL}/user/getUserByID/${feedback.userID}`
           );
+          
           const userData = await userResponse.json();
           return {...feedback, userName: userData.name};
         }),

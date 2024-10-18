@@ -1,9 +1,11 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, Image, TextInput, FlatList, Dimensions, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-const { width } = Dimensions.get('window');
 import { useRoute } from '@react-navigation/native';
 import axios from 'axios';
+import BASE_URL from '../component/apiConfig';
+
+const { width } = Dimensions.get('window');
 
 const images = [
     require('../design/image/slide1.jpg'),
@@ -13,14 +15,10 @@ const images = [
     require('../design/image/slide1.jpg'),
 ];
 
-
-
 const HomeScreen = () => {
     const [currentIndex, setCurrentIndex] = useState(0);
-
     const [selectedCourse, setSelectedCourse] = useState('Tất cả');
     const [isBookmarked, setIsBookmarked] = useState(false);
-
     const [subjects, setSubjects] = useState([]);
     const [cardData, setCardData] = useState([]);
     const [mentors, setMentors] = useState([]);
@@ -28,7 +26,6 @@ const HomeScreen = () => {
     const navigation = useNavigation();
     const route = useRoute();
     const { name } = route.params || {};
-
 
     const toggleBookmark = () => {
         setIsBookmarked(!isBookmarked);
@@ -38,7 +35,7 @@ const HomeScreen = () => {
     useEffect(() => {
         const fetchCourses = async () => {
             try {
-                const response = await axios.get('http://localhost:3001/subject/getAll');
+                const response = await axios.get(`${BASE_URL}/subject/getAll`);
                 setSubjects(response.data.map(course => course.name));
             } catch (error) {
                 console.error('Error fetching courses:', error);
@@ -47,25 +44,27 @@ const HomeScreen = () => {
 
         fetchCourses();
     }, []);
-  // api card course
-  useEffect(() => {
-    const fetchData = async () => {
-        try {
-            const response = await fetch('http://localhost:3001/course/getAll');
-            const json = await response.json();
-            setCardData(json);
-        } catch (error) {
-            console.error(error);
-        }
-    };
 
-    fetchData();
-}, []);
+    // api card course
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const response = await fetch(`${BASE_URL}/course/getAll`);
+                const json = await response.json();
+                setCardData(json);
+            } catch (error) {
+                console.error(error);
+            }
+        };
+
+        fetchData();
+    }, []);
+
     // Gọi API để lấy dữ liệu giảng viên
     useEffect(() => {
         const fetchMentors = async () => {
             try {
-                const response = await axios.get('http://localhost:3001/teacher/getAll');
+                const response = await axios.get(`${BASE_URL}/teacher/getAll`);
                 console.log(response.data); 
                 setMentors(response.data.map(mentor => ({
                     id: mentor.id ? mentor.id.toString() : '', 

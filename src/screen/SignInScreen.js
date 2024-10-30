@@ -69,14 +69,14 @@ const SignInScreen = () => {
 
         // Gọi API getAll để kiểm tra email
         try {
-            const response = await fetch(`${BASE_URL}/user/getAll`); 
+            const response = await fetch(`${BASE_URL}/user/getAll`);
             const users = await response.json();
             console.log('Users from API:', users);
 
             const user = users.find(user => user.email === email);
 
             if (user) {
-                console.log('User found:', user); 
+                console.log('User found:', user);
 
                 // Nếu tìm thấy email, gọi API login
                 const loginResponse = await fetch(`${BASE_URL}/user/login`, {
@@ -96,12 +96,14 @@ const SignInScreen = () => {
                 if (loginResponse.ok) {
                     await AsyncStorage.setItem('USER_INFO', JSON.stringify(user));
 
-                    // Chuyển sang màn hình "Trang chủ" và truyền tên người dùng
-                    console.log('Navigating to HomeScreen with name:', user.name); // Log tên người dùng đang chuyển
+                    // Chuyển sang màn hình "Trang chủ" và truyền userID và name
+                    console.log('Navigating to HomeScreen with userID:', user._id, 'and name:', user.name); // Log userID và tên người dùng đang chuyển
 
-                    // Sau đó, chuyển đến màn hình Profile với userId
-                    navigation.navigate('Tabs', { screen: 'Cá nhân', params: { userId: user._id }});
-                    navigation.navigate('Tabs', { screen: 'Trang chủ', params: { userId: user._id, name: user.name } });
+                    // Chuyển đến màn hình Profile với userID
+                    navigation.navigate('Tabs', { screen: 'Cá nhân', params: { userID: user._id } });
+
+                    // Chuyển đến màn hình "Trang chủ" với userID và name
+                    navigation.navigate('Tabs', { screen: 'Trang chủ', params: { userID: user._id, name: user.name } });
                 } else {
                     // Kiểm tra lỗi trả về từ API
                     if (loginData.message === 'Incorrect password') {

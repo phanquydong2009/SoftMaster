@@ -1,4 +1,4 @@
-import { Image, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View, Alert, ActivityIndicator } from 'react-native';
+import { Image, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View, Alert, ActivityIndicator, Keyboard } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import BASE_URL from '../component/apiConfig';
@@ -6,7 +6,7 @@ import BASE_URL from '../component/apiConfig';
 const EditProfile = () => {
   const navigation = useNavigation();
   const route = useRoute();
-  const { userId } = route.params; // Nhận _id từ ProfileScreen
+  const { userID } = route.params; // Nhận _id từ ProfileScreen
   const [gender, setGender] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
   const [successPopupVisible, setSuccessPopupVisible] = useState(false);
@@ -20,9 +20,9 @@ const EditProfile = () => {
   const fetchUserData = async () => {
     setLoading(true); // Start loading
     try {
-      const response = await fetch(`${BASE_URL}/user/getUserByID/${userId}`);
-
+      const response = await fetch(`${BASE_URL}/user/getUserByID/${userID}`);
       const data = await response.json();
+      
       if (response.ok) {
         setName(data.name || '');
         setPhone(data.phone || '');
@@ -56,8 +56,7 @@ const EditProfile = () => {
     
     setLoading(true); // Start loading
     try {
-      const response = await fetch(`${BASE_URL}/user/update/${userId}`, {
-
+      const response = await fetch(`${BASE_URL}/user/update/${userID}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -86,7 +85,7 @@ const EditProfile = () => {
 
   useEffect(() => {
     fetchUserData();
-  }, []);
+  }, [userID]);
 
   const handleSelectGender = (selectedGender) => {
     setGender(selectedGender);
@@ -115,128 +114,128 @@ const EditProfile = () => {
         <ActivityIndicator size="large" color="#0000ff" />
       ) : (
         <>
-        <View style={styles.avatar_container}>
-  <View style={styles.circleBorder}>
-    <Image
-      source={avatar && typeof avatar === 'string' ? { uri: avatar } : require('../design/image/noprofile.png')}
-      style={styles.avatar}
-    />
-  </View>
-  <TouchableOpacity>
-    <Image source={require('../design/image/square.png')} style={styles.overlayImage} />
-  </TouchableOpacity>
-</View>
-
-
-          <View style={styles.body}>
-            <View style={styles.inputContainer}>
-              <Image source={require('../design/image/ic_name.png')} style={styles.icon} />
-              <TextInput
-                style={styles.textInput}
-                placeholder="Họ tên"
-                placeholderTextColor="#505050"
-                value={name}
-                onChangeText={setName}
-              />
+          <TouchableOpacity onPress={Keyboard.dismiss}>
+            <View style={styles.avatar_container}>
+              <View style={styles.circleBorder}>
+                <Image
+                  source={avatar && typeof avatar === 'string' ? { uri: avatar } : require('../design/image/noprofile.png')}
+                  style={styles.avatar}
+                />
+              </View>
+              <TouchableOpacity>
+                <Image source={require('../design/image/square.png')} style={styles.overlayImage} />
+              </TouchableOpacity>
             </View>
 
-            <View style={styles.inputContainer}>
-              <Image source={require('../design/image/ic_name.png')} style={styles.icon} />
-              <TextInput
-                style={styles.textInput}
-                placeholder="Số điện thoại"
-                placeholderTextColor="#505050"
-                value={phone}
-                onChangeText={setPhone}
-              />
+            <View style={styles.body}>
+              <View style={styles.inputContainer}>
+                <Image source={require('../design/image/ic_name.png')} style={styles.icon} />
+                <TextInput
+                  style={styles.textInput}
+                  placeholder="Họ tên"
+                  placeholderTextColor="#505050"
+                  value={name}
+                  onChangeText={setName}
+                />
+              </View>
+
+              <View style={styles.inputContainer}>
+                <Image source={require('../design/image/ic_name.png')} style={styles.icon} />
+                <TextInput
+                  style={styles.textInput}
+                  placeholder="Số điện thoại"
+                  placeholderTextColor="#505050"
+                  value={phone}
+                  onChangeText={setPhone}
+                />
+              </View>
+
+              <View style={styles.inputContainer}>
+                <Image source={require('../design/image/ic_profile.png')} style={styles.icon} />
+                <TextInput
+                  style={styles.textInput}
+                  placeholder="Link ảnh đại diện"
+                  placeholderTextColor="#505050"
+                  value={avatar}
+                  onChangeText={setAvatar}
+                />
+              </View>
+
+              <View style={styles.inputContainer}>
+                <Image source={require('../design/image/ic_birthday.png')} style={styles.icon} />
+                <TextInput
+                  style={styles.textInput}
+                  placeholder="Ngày sinh"
+                  placeholderTextColor="#505050"
+                  value={birthday}
+                  onChangeText={setBirthday}
+                />
+              </View>
+
+              <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.inputContainer}>
+                <Image
+                  source={gender ? (gender === 'Nam' ? require('../design/image/men.png') : require('../design/image/woman.png')) : require('../design/image/ic-sex.png')}
+                  style={styles.icon}
+                />
+                <Text style={styles.textInput}>{gender || "Giới tính"}</Text>
+              </TouchableOpacity>
+
+              <Modal
+                animationType="slide"
+                transparent={true}
+                visible={modalVisible}
+                onRequestClose={() => setModalVisible(false)}
+              >
+                <TouchableOpacity style={styles.modalOverlay} onPress={() => setModalVisible(false)}>
+                  <View style={styles.modalContainer}>
+                    <TouchableOpacity style={styles.option} onPress={() => handleSelectGender('Nam')}>
+                      <Image source={require('../design/image/men.png')} style={styles.optionIcon} />
+                      <Text style={styles.optionText}>Nam</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.option} onPress={() => handleSelectGender('Nữ')}>
+                      <Image source={require('../design/image/woman.png')} style={styles.optionIcon} />
+                      <Text style={styles.optionText}>Nữ</Text>
+                    </TouchableOpacity>
+                  </View>
+                </TouchableOpacity>
+              </Modal>
+
+              <TouchableOpacity style={styles.inputContainer}>
+                <Image source={require('../design/image/ic_name.png')} style={styles.icon} />
+                <Text style={styles.textInput}>Đổi mật khẩu</Text>
+              </TouchableOpacity>
             </View>
 
-            <View style={styles.inputContainer}>
-              <Image source={require('../design/image/ic_profile.png')} style={styles.icon} />
-              <TextInput
-                style={styles.textInput}
-                placeholder="Link ảnh đại diện"
-                placeholderTextColor="#505050"
-                value={avatar}
-                onChangeText={setAvatar}
-              />
+            <View style={styles.footer}>
+              <TouchableOpacity style={styles.button} onPress={updateUserData}> 
+                <Text style={styles.txtButton}>Cập nhật</Text>
+                <Image source={require('../design/image/icon_continue.png')} style={styles.continueIcon} />
+              </TouchableOpacity>
             </View>
-
-            <View style={styles.inputContainer}>
-              <Image source={require('../design/image/ic_birthday.png')} style={styles.icon} />
-              <TextInput
-                style={styles.textInput}
-                placeholder="Ngày sinh"
-                placeholderTextColor="#505050"
-                value={birthday}
-                onChangeText={setBirthday}
-              />
-            </View>
-
-            <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.inputContainer}>
-              <Image
-                source={gender ? (gender === 'Nam' ? require('../design/image/men.png') : require('../design/image/woman.png')) : require('../design/image/ic-sex.png')}
-                style={styles.icon}
-              />
-              <Text style={styles.textInput}>{gender || "Giới tính"}</Text>
-            </TouchableOpacity>
 
             <Modal
               animationType="slide"
               transparent={true}
-              visible={modalVisible}
-              onRequestClose={() => setModalVisible(false)}
+              visible={successPopupVisible}
+              onRequestClose={closeSuccessPopup}
             >
-              <TouchableOpacity style={styles.modalOverlay} onPress={() => setModalVisible(false)}>
-                <View style={styles.modalContainer}>
-                  <TouchableOpacity style={styles.option} onPress={() => handleSelectGender('Nam')}>
-                    <Image source={require('../design/image/men.png')} style={styles.optionIcon} />
-                    <Text style={styles.optionText}>Nam</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.option} onPress={() => handleSelectGender('Nữ')}>
-                    <Image source={require('../design/image/woman.png')} style={styles.optionIcon} />
-                    <Text style={styles.optionText}>Nữ</Text>
+              <View style={styles.popupOverlay}>
+                <View style={styles.popupContainer}>
+                  <Image source={require('../design/image/sss.jpg')} style={styles.popupImage} />
+                  <Text style={styles.popupTitle}>Cập nhật thành công!</Text>
+                  <Text style={styles.popupMessage}>Thông tin của bạn đã được cập nhật mới.</Text>
+                  <TouchableOpacity style={styles.popupButton} onPress={closeSuccessPopup}>
+                    <Text style={styles.popupButtonText}>OK</Text>
                   </TouchableOpacity>
                 </View>
-              </TouchableOpacity>
-            </Modal>
-
-            <TouchableOpacity style={styles.inputContainer}>
-              <Image source={require('../design/image/ic_name.png')} style={styles.icon} />
-              <Text style={styles.textInput}>Đổi mật khẩu</Text>
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.footer}>
-            <TouchableOpacity style={styles.button} onPress={updateUserData}> 
-              <Text style={styles.txtButton}>Cập nhật</Text>
-              <Image source={require('../design/image/icon_continue.png')} style={styles.continueIcon} />
-            </TouchableOpacity>
-          </View>
-
-          <Modal
-            animationType="slide"
-            transparent={true}
-            visible={successPopupVisible}
-            onRequestClose={closeSuccessPopup}
-          >
-            <View style={styles.popupOverlay}>
-              <View style={styles.popupContainer}>
-                <Image source={require('../design/image/sss.jpg')} style={styles.popupImage} />
-                <Text style={styles.popupTitle}>Cập nhật thành công!</Text>
-                <Text style={styles.popupMessage}>Thông tin của bạn đã được cập nhật mới.</Text>
-                <TouchableOpacity style={styles.popupButton} onPress={closeSuccessPopup}>
-                  <Text style={styles.popupButtonText}>Đóng</Text>
-                </TouchableOpacity>
               </View>
-            </View>
-          </Modal>
+            </Modal>
+          </TouchableOpacity>
         </>
       )}
     </View>
   );
-}
-
+};
 export default EditProfile;
 
 const styles = StyleSheet.create({

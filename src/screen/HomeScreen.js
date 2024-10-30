@@ -25,13 +25,13 @@ const HomeScreen = () => {
     const flatListRef = useRef(null);
     const navigation = useNavigation();
     const route = useRoute();
-    const { name } = route.params || {};
+    const { name, userID } = route.params || {}; // Sửa userId thành userID
 
     const toggleBookmark = () => {
         setIsBookmarked(!isBookmarked);
     };
 
-    // gọi api Subject
+    // Gọi API Subject
     useEffect(() => {
         const fetchCourses = async () => {
             try {
@@ -45,7 +45,7 @@ const HomeScreen = () => {
         fetchCourses();
     }, []);
 
-    // api card course
+    // API card course
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -65,11 +65,11 @@ const HomeScreen = () => {
         const fetchMentors = async () => {
             try {
                 const response = await axios.get(`${BASE_URL}/teacher/getAll`);
-                console.log(response.data); 
+                console.log(response.data);
                 setMentors(response.data.map(mentor => ({
-                    id: mentor.id ? mentor.id.toString() : '', 
-                    avatar: { uri: mentor.avatar }, 
-                    name: mentor.name || 'Tên chưa xác định', 
+                    id: mentor.id ? mentor.id.toString() : '',
+                    avatar: { uri: mentor.avatar },
+                    name: mentor.name || 'Tên chưa xác định',
                 })));
             } catch (error) {
                 console.error('Error fetching mentors:', error);
@@ -79,7 +79,7 @@ const HomeScreen = () => {
         fetchMentors();
     }, []);
   
-    // chuyển trang
+    // Chuyển trang
     const handleViewAllCategory = () => {
         navigation.navigate('AllCategory');
     };
@@ -87,8 +87,10 @@ const HomeScreen = () => {
         navigation.navigate('AllMentor');
     };
     const handleViewPopularCourses = () => {
-        navigation.navigate('PopularCourses');
+        console.log("User ID truyền qua là:", userID); // Sửa userId thành userID
+        navigation.navigate('PopularCourses', { userID }); // Sửa userId thành userID
     };
+    
     const handleSearch = () => {
         navigation.navigate('Search');
     };
@@ -112,13 +114,7 @@ const HomeScreen = () => {
             setCurrentIndex(viewableItems[0].index);
         }
     }).current;
-
-    const handleBookmarkPress = (id) => {
-        setActiveBookmarks(prevState => ({
-            ...prevState,
-            [id]: !prevState[id]
-        }));
-    };
+    
 
     const renderItem = ({ item }) => (
         <View style={styles.slide}>
@@ -310,8 +306,9 @@ const styles = StyleSheet.create({
     },
     mentorCard: {
         alignItems: 'center',
-        marginHorizontal: 10,
+    
         marginVertical: 5,
+        width : 100
     },
     ic_bookmark: {
         width: 30,

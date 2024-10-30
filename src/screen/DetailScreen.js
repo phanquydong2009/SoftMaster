@@ -7,70 +7,87 @@ import {
   ScrollView,
   Alert,
 } from 'react-native';
-import React, {useCallback, useEffect, useState} from 'react'; 
-import {useIsFocused, useNavigation, useRoute} from '@react-navigation/native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { useCallback, useEffect, useState } from 'react'; 
+import { useIsFocused, useNavigation, useRoute } from '@react-navigation/native';
 import BASE_URL from '../component/apiConfig';
 
 const DetailScreen = () => {
   const navigation = useNavigation();
   const route = useRoute(); 
-  const {courseId} = route.params; 
+  const { courseId, userID } = route.params; 
+
+  console.log("Course ID nhận được là:", courseId);
+  console.log("User ID nhận được là:", userID);
 
   const [courseData, setCourseData] = useState(null); 
   const [averageRating, setAverageRating] = useState(null); 
   const [countFeedback, setCountFeedback] = useState(null); 
-  const [userInfo, setUserInfo] = useState(null);
+  
   const handleNavigateToReview = () => {
-    navigation.navigate('ReviewCourse', {courseId});
+    navigation.navigate('ReviewCourse', { courseId, userID });
   };
 
   const isJoinedCourse = courseData?.isJoinedCourse;
 
   const fetchCourseDetail = useCallback(async () => {
-    // lấy user id
-    const user = JSON.parse(await AsyncStorage.getItem('USER_INFO'));
-    setUserInfo(user);
+    if (!userID) {
+      Alert.alert('Lỗi', 'Không tìm thấy User ID');
+      return;
+    }
 
-    const courseResponse = await fetch(
-      `${BASE_URL}/course/getDetailByCourseID/${courseId}/?userId=${user._id}`, 
-    );
-    
-    const courseData = await courseResponse.json();
-    setCourseData(courseData);
-  }, [courseId]);
+    try {
+      // Gọi API lấy thông tin chi tiết khóa học
+      const courseResponse = await fetch(
+        `${BASE_URL}/course/getDetailByCourseID/${courseId}/?userID=${userID}`,
+      );
+
+      if (!courseResponse.ok) {
+        throw new Error('Error fetching course detail');
+      }
+      
+      const courseData = await courseResponse.json();
+      setCourseData(courseData);
+    } catch (error) {
+      console.error('Error fetching course detail:', error);
+      Alert.alert('Có lỗi xảy ra, vui lòng thử lại');
+    }
+  }, [courseId, userID]);
 
   const isFocused = useIsFocused();
 
   useEffect(() => {
-    // Gọi API lấy thông tin chi tiết khóa học
     fetchCourseDetail();
   }, [isFocused, fetchCourseDetail]);
 
   useEffect(() => {
     const fetchCourseDetails = async () => {
       try {
-        // Gọi API lấy đánh giá trung bình của khóa học
         const ratingResponse = await fetch(
-          `${BASE_URL}/feedbackCourse/averageRatingByCourseID/${courseId}`, // Sử dụng BASE_URL
+          `${BASE_URL}/feedbackCourse/averageRatingByCourseID/${courseId}`,
         );
+
+        if (!ratingResponse.ok) {
+          throw new Error('Error fetching average rating');
+        }
         const ratingData = await ratingResponse.json();
-        setAverageRating(ratingData.averageRating); // Lưu dữ liệu đánh giá trung bình
-  
-        // Gọi API lấy số lượng feedback của khóa học
+        setAverageRating(ratingData.averageRating);
+
         const feedbackResponse = await fetch(
-          `${BASE_URL}/feedbackCourse/countFeedbackByCourseID/${courseId}`, // Sử dụng BASE_URL
+          `${BASE_URL}/feedbackCourse/countFeedbackByCourseID/${courseId}`,
         );
+
+        if (!feedbackResponse.ok) {
+          throw new Error('Error fetching feedback count');
+        }
         const feedbackData = await feedbackResponse.json();
-        setCountFeedback(feedbackData.count); // Lưu dữ liệu số lượng feedback
+        setCountFeedback(feedbackData.count);
       } catch (error) {
         console.error('Error fetching course details or feedback:', error);
       }
     };
   
-    fetchCourseDetails(); // Gọi hàm lấy dữ liệu
-  }, [courseId, fetchCourseDetail]); // Chỉ gọi lại khi courseId thay đổi
-  
+    fetchCourseDetails();
+  }, [courseId]);
 
   const createPaymentUrl = async () => {
     try {
@@ -79,7 +96,7 @@ const DetailScreen = () => {
         {
           method: 'POST',
           body: JSON.stringify({
-            userId: userInfo._id,
+            userID: userID,
             courseId,
           }),
           headers: {
@@ -87,17 +104,14 @@ const DetailScreen = () => {
           },
         },
       );
-  
+
       const data = await res.json();
-  
       return data;
     } catch (error) {
       Alert.alert('Có lỗi xảy ra, vui lòng thử lại');
     }
   };
-  
 
-  // Nếu dữ liệu khóa học chưa được tải, hiển thị Loading
   if (!courseData) {
     return (
       <View style={styles.container}>
@@ -106,8 +120,7 @@ const DetailScreen = () => {
     );
   }
 
-  // Destructure dữ liệu để sử dụng
-  const {name, img, describe, teacherID} = courseData;
+  const { name, img, describe, teacherID } = courseData;
   const teacherName = teacherID ? teacherID.name : 'Unknown Teacher';
 
   const onJoinCoursePress = async () => {
@@ -134,12 +147,12 @@ const DetailScreen = () => {
       </View>
       <View style={styles.top}>
         <View style={styles.banner}>
-          <Image source={{uri: img}} style={styles.imgBanner} />
+          <Image source={{ uri: img }} style={styles.imgBanner} />
           <Text style={styles.nameCourse}>{name}</Text>
         </View>
         <View style={styles.infoTeacher}>
           <Image
-            source={{uri: teacherID?.avatar}}
+            source={{ uri: teacherID?.avatar }}
             style={styles.avatarTeacher}
           />
           <Text style={styles.nameTeacher}>{teacherName}</Text>

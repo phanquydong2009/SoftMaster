@@ -1,32 +1,42 @@
 import { StyleSheet, Text, View, TouchableOpacity, Image, TextInput, FlatList } from 'react-native';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
-
-// Sample data
-const categories = [
-  { id: '1', name: 'Thiết kế 3D', image: require('../design/image/ic_3d.png') },
-  { id: '2', name: 'Thiết kế đồ họa', image: require('../design/image/ic_design.png') },
-  { id: '3', name: 'Phát triển Web', image: require('../design/image/ic_web.png') },
-  { id: '4', name: 'SEO & Tiếp thị', image: require('../design/image/ic_sale.png') },
-  { id: '5', name: 'Tài chính & Kế toán', image: require('../design/image/ic_bank.png') },
-  { id: '6', name: 'Phát triển bản thân', image: require('../design/image/icon_pro.png') },
-  { id: '7', name: 'Năng suất văn phòng', image: require('../design/image/ic_settingoffice.png') },
-  { id: '7', name: 'Quản lý nhân sự', image: require('../design/image/ic_office.png') },
-];
+import BASE_URL from '../component/apiConfig';
 
 const AllCategory = () => {
   const navigation = useNavigation();
-  
+  const [subjects, setSubjects] = useState([]);
+
+  // Hàm gọi API để lấy dữ liệu từ API subject/getAll
+  useEffect(() => {
+    const fetchSubjects = async () => {
+      try {
+        const response = await fetch(`${BASE_URL}/subject/getAll`);
+        const data = await response.json();
+        setSubjects(data);
+      } catch (error) {
+        console.error("Error fetching subjects:", error);
+      }
+    };
+
+    fetchSubjects();
+  }, []);
+
   const handleBack = () => {
     navigation.goBack();
   };
-
   const renderItem = ({ item }) => (
     <View style={styles.itemContainer}>
-      <Image source={item.image} style={styles.itemImage} />
+      {/* Sử dụng đúng thuộc tính `img` để hiển thị hình ảnh từ API */}
+      {item.img ? (
+        <Image source={{ uri: item.img }} style={styles.itemImage} />
+      ) : (
+        <Text>Image not available</Text>
+      )}
       <Text style={styles.itemName}>{item.name}</Text>
     </View>
   );
+  
 
   return (
     <View style={styles.container}>
@@ -45,11 +55,11 @@ const AllCategory = () => {
         />
       </View>
       <FlatList
-        data={categories}
+        data={subjects}
         renderItem={renderItem}
-        keyExtractor={item => item.id}
-        numColumns={2}  
-        columnWrapperStyle={styles.row} 
+        keyExtractor={(item, index) => item.id ? item.id.toString() : index.toString()} 
+        numColumns={2}
+        columnWrapperStyle={styles.row}
       />
     </View>
   );
@@ -61,7 +71,6 @@ const styles = StyleSheet.create({
   category_container: {
     flexDirection: "row"
   },
-
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -113,15 +122,15 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     margin: 10,
-    paddingVertical:30
+    paddingVertical: 30
   },
   itemImage: {
-    width:60,
-    height: 60,
+    width: 100,
+    height: 100,
     borderRadius: 10,
   },
   itemName: {
-    fontFamily : 'Mulish-ExtraBold',
+    fontFamily: 'Mulish-ExtraBold',
     marginTop: 5,
     fontSize: 18,
     color: 'rgba(32, 34, 68, 0.8)',

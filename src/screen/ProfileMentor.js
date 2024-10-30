@@ -6,49 +6,18 @@ import {
   FlatList,
   ActivityIndicator,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import {useRoute} from '@react-navigation/native';
-import {useNavigation} from '@react-navigation/native';
+import { useRoute, useNavigation } from '@react-navigation/native';
 import BASE_URL from '../component/apiConfig';
-
-// data khóa học
-const courseDetails = [
-  {
-    id: '1',
-    image: require('../design/image/course5.jpg'),
-    nameCourse: 'Thiết kế đồ họa',
-    nameLesson: 'Graphic Design Advanced',
-    quiz: '10 quiz & 1 Video',
-    rate: '4.5',
-    student: '1000 học viên',
-  },
-
-  {
-    id: '2',
-    image: require('../design/image/course6.jpg'),
-    nameCourse: 'Thiết kế đồ họa',
-    nameLesson: 'Advertisement Design',
-    quiz: '8 quiz & 2 Video',
-    rate: '4.0',
-    student: '850 học viên',
-  },
-  {
-    id: '3',
-    image: require('../design/image/course5.jpg'),
-    nameCourse: 'Phát triển Web',
-    nameLesson: 'Web development concepts',
-    quiz: '12 quiz & 1 Video',
-    rate: '4.7',
-    student: '1200 học viên',
-  },
-];
 
 const ProfileMentor = () => {
   const route = useRoute();
   const navigation = useNavigation();
-  const {_id} = route.params;
+  const { _id } = route.params; // Teacher ID
+  const userId = route.params.userId; // User ID from SignInScreen
 
   const [mentor, setMentor] = useState(null);
   const [followerCount, setFollowerCount] = useState(null);
@@ -56,121 +25,103 @@ const ProfileMentor = () => {
   const [isCourses, setIsCourses] = useState(true);
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [users, setUsers] = useState([]);
-  const [courseCount, setCourseCount] = useState(0); // Thêm state cho courseCount
-  // Lấy dữ liệu giảng viên từ API
+  const [courseCount, setCourseCount] = useState(0);
+  const [noCoursesMessage, setNoCoursesMessage] = useState("");
+
+  // Hàm theo dõi giảng viên
+  const handleFollow = async () => {
+    try {
+      const response = await axios.post(`${BASE_URL}/followTeacher/follow/${userId}`, {
+        teacherID: _id,
+      });
+      if (response.data.success) {
+        Alert.alert("Thành công", "Bạn đã theo dõi giảng viên thành công!");
+        setFollowerCount(prevCount => prevCount + 1); // Tăng số người theo dõi
+      } else {
+        Alert.alert("Thất bại", "Không thể theo dõi giảng viên.");
+      }
+    } catch (error) {
+      console.error('Error following mentor:', error);
+      Alert.alert("Lỗi", "Đã xảy ra lỗi khi theo dõi.");
+    }
+  };
+
   useEffect(() => {
-    const fetchMentor = async () => {
+    const fetchData = async () => {
       try {
-        const response = await axios.get(
-          `${BASE_URL}/teacher/getTeacherByID/${_id}`
-      );
-      
-        setMentor(response.data);
-        setData(isCourses ? courseDetails : []);
+        const [mentorResponse, followerResponse, courseCountResponse] = await Promise.all([
+          axios.get(`${BASE_URL}/teacher/getTeacherByID/${_id}`),
+          axios.get(`${BASE_URL}/followTeacher/getFollowerCount/${_id}`),
+          axios.get(`${BASE_URL}/course/getCourseCountByTeacher/${_id}`)
+        ]);
+
+        setMentor(mentorResponse.data);
+        setFollowerCount(followerResponse.data.followerCount);
+        setCourseCount(courseCountResponse.data.courseCount);
       } catch (error) {
-        console.error('Error fetching mentor:', error);
+        console.error('Error fetching data:', error);
       } finally {
         setLoading(false);
       }
     };
-    fetchMentor();
-  }, [_id, isCourses]);
 
-  // Gọi API để lấy followerCount
-  useEffect(() => {
-    const fetchFollowerCount = async () => {
-      try {
-        const response = await axios.get(
-          `${BASE_URL}/followTeacher/getFollowerCount/${_id}`
-      );
-      
-        setFollowerCount(response.data.followerCount);
-      } catch (error) {
-        console.error('Error fetching follower count:', error);
-      }
-    };
-    fetchFollowerCount();
+    fetchData();
   }, [_id]);
 
-  // Gọi API để lấy danh sách người dùng
   useEffect(() => {
-    const fetchUsers = async () => {
+    const fetchContent = async () => {
+      setLoading(true);
+      setNoCoursesMessage("");
       try {
-        const response = await axios.get(`${BASE_URL}/user/getAll`);
+        if (isCourses) {
+          const response = await axios.get(`${BASE_URL}/course/getCourseByTeacherID/${_id}`);
 
-        setUsers(response.data); // Lưu danh sách người dùng
+          if (Array.isArray(response.data) && response.data.length > 0) {
+            const courseData = response.data.map(course => ({
+              id: course._id,
+              image: { uri: course.img },
+              nameCourse: course.name,
+              nameLesson: course.describe,
+              quiz: `${course.price} VNĐ`,
+              rate: '0 đánh giá',
+              student: '0 học viên',
+            }));
+            setData(courseData);
+          } else {
+            setData([]); // Không có khóa học
+            setNoCoursesMessage("Chưa có khóa học nào");
+          }
+        } else {
+          const response = await axios.get(`${BASE_URL}/feedbackCourse/getAll`);
+          if (Array.isArray(response.data)) {
+            const feedbackData = response.data.flatMap(course =>
+              course.feedbacks.map(feedback => ({
+                id: feedback._id,
+                name: feedback.user ? feedback.user.name : 'Unknown User',
+                img: feedback.user && feedback.user.avatar ? { uri: feedback.user.avatar } : require('../design/image/noprofile.png'),
+                rating: feedback.feedbackDetail ? feedback.feedbackDetail.rating : 0,
+                comment: feedback.feedbackDetail ? feedback.feedbackDetail.content : 'No comment',
+                love: '0',
+                createdAt: feedback.feedbackDetail ? new Date(feedback.feedbackDetail.createdAt).toLocaleDateString() : 'Unknown date',
+              }))
+            );
+            setData(feedbackData);
+            setFeedbackCount(feedbackData.length);
+          } else {
+            console.error('Expected array but got:', response.data);
+            setData([]);
+          }
+        }
       } catch (error) {
-        console.error('Error fetching users:', error);
-      }
-    };
-    fetchUsers();
-  }, []);
-
-  // Gọi API để lấy đánh giá khóa học
-  useEffect(() => {
-    const fetchFeedback = async () => {
-      try {
-        const response = await axios.get(`${BASE_URL}/feedbackCourse/getAll`);
-
-        const feedbackData = response.data.flatMap(course =>
-          course.feedbacks.map(feedback => {
-            const user = users.find(user => user._id === feedback.userID); // Tìm thông tin người dùng
-
-            return {
-              id: feedback._id,
-              name: user ? user.name : 'Unknown User',
-              img:
-                user && user.avatar
-                  ? {uri: user.avatar}
-                  : require('../design/image/noprofile.png'),
-              rating: feedback.feedbackDetail
-                ? feedback.feedbackDetail.rating
-                : 0,
-              comment: feedback.feedbackDetail
-                ? feedback.feedbackDetail.content
-                : 'No comment',
-              love: '0', // giả sử bạn không có dữ liệu về số lượt thích
-              createdAt: feedback.feedbackDetail
-                ? new Date(
-                    feedback.feedbackDetail.createdAt,
-                  ).toLocaleDateString()
-                : 'Unknown date',
-              updatedAt: feedback.feedbackDetail
-                ? new Date(
-                    feedback.feedbackDetail.updatedAt,
-                  ).toLocaleDateString()
-                : 'Unknown date',
-            };
-          }),
-        );
-
-        setData(feedbackData); // Cập nhật data với feedbackData đã xử lý
-        setFeedbackCount(feedbackData.length); // Cập nhật số lượng feedback
-      } catch (error) {
-        console.error('Error fetching feedback:', error);
+        console.error('Error fetching content:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
-    if (!isCourses) {
-      fetchFeedback();
-    }
-  }, [_id, isCourses, users]);
+    fetchContent();
+  }, [isCourses, _id]);
 
-  // Gọi API để lấy số lượng khóa học của giảng viên
-  useEffect(() => {
-    const fetchCourseCount = async () => {
-      try {
-        const response = await axios.get(`${BASE_URL}/course/getCourseCountByTeacher/${_id}`);
-
-        setCourseCount(response.data.courseCount); // Cập nhật courseCount
-      } catch (error) {
-        console.error('Error fetching course count:', error);
-      }
-    };
-    fetchCourseCount();
-  }, [_id]);
-  //chuyển trang
   const handleBack = () => {
     navigation.goBack();
   };
@@ -181,25 +132,21 @@ const ProfileMentor = () => {
 
   const handleButtonPress = isCoursesButton => {
     setIsCourses(isCoursesButton);
-    setData(isCoursesButton ? courseDetails : data);
   };
 
-  const renderItem = ({item}) => (
+  const renderItem = ({ item }) => (
     <View style={styles.detailItem}>
       {isCourses ? (
         <>
           <Image source={item.image} style={styles.detailImage} />
           <View style={styles.detailContent}>
             <Text style={styles.detailNameCourse}>{item.nameCourse}</Text>
-            <Text
-              style={styles.detailNameLesson}
-              numberOfLines={1}
-              ellipsizeMode="tail">
+            <Text style={styles.detailNameLesson} numberOfLines={1} ellipsizeMode="tail">
               {item.nameLesson}
             </Text>
             <Text style={styles.detailQuiz}>{item.quiz}</Text>
             <View style={styles.rate_container}>
-              <Text style={styles.detailRate}>⭐ {item.rate}</Text>
+              <Text style={styles.detailRate}>{item.rate}</Text>
               <Text style={styles.detailRate}>|</Text>
               <Text style={styles.detailStudent}>{item.student}</Text>
             </View>
@@ -208,9 +155,7 @@ const ProfileMentor = () => {
       ) : (
         <>
           <Image
-            source={
-              item.img ? item.img : require('../design/image/noprofile.png')
-            }
+            source={item.img ? item.img : require('../design/image/noprofile.png')}
             style={styles.avatarUser}
           />
           <View style={styles.voteContent}>
@@ -266,7 +211,7 @@ const ProfileMentor = () => {
       </View>
       <View style={styles.header}>
         <View style={styles.avatarWrapper}>
-          <Image source={{uri: mentor.avatar}} style={styles.avatarMentor} />
+          <Image source={{ uri: mentor.avatar }} style={styles.avatarMentor} />
         </View>
       </View>
       <View style={styles.name_container}>
@@ -282,7 +227,9 @@ const ProfileMentor = () => {
           <Text style={styles.item_numberFL}>
             {followerCount !== null ? followerCount : 'Đang tải...'}
           </Text>
-          <Text style={styles.item_title}>Theo dõi</Text>
+       
+            <Text style={styles.txt_follow}>Theo dõi</Text>
+       
         </View>
         <View style={styles.column_item}>
           <Text style={styles.item_numberFeedback}>{feedbackCount}</Text>
@@ -293,7 +240,7 @@ const ProfileMentor = () => {
         <Text style={styles.txtbio}>{mentor.slogan}</Text>
       </View>
       <View style={styles.btnFollow_container}>
-        <TouchableOpacity style={styles.btn_follow}>
+      <TouchableOpacity style={styles.btn_follow} onPress={handleFollow}>
           <Text style={styles.txt_follow}>Theo dõi</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.btn_mess}>
@@ -312,7 +259,7 @@ const ProfileMentor = () => {
           <TouchableOpacity
             onPress={() => handleButtonPress(false)}
             style={[styles.btn, !isCourses && styles.btnActive]}>
-            <Text style={[styles.txtInactive, !isCourses && styles.txtActive]}>
+            <Text style={[styles.txtActive, isCourses && styles.txtInactive]}>
               Đánh giá
             </Text>
           </TouchableOpacity>
@@ -320,8 +267,10 @@ const ProfileMentor = () => {
         <FlatList
           data={data}
           renderItem={renderItem}
-          keyExtractor={item => item.id.toString()}
-          style={{width: '100%', marginVertical: 10}}
+          keyExtractor={item => item.id}
+          contentContainerStyle={styles.flatList}
+          style={{ width: '99%', margin: 10 }}
+          ListEmptyComponent={<Text style={styles.emptyMessage}>{noCoursesMessage}</Text>}
         />
       </View>
       {/* Floating Button */}
@@ -341,7 +290,14 @@ const ProfileMentor = () => {
 
 export default ProfileMentor;
 
+
 const styles = StyleSheet.create({
+  emptyMessage: {
+    textAlign: 'center',
+    marginTop: 20,
+    fontSize: 16,
+    color: 'gray',
+  },
   floatingButton: {
     position: 'absolute',
     bottom: 20,
@@ -353,7 +309,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
     elevation: 5,
@@ -369,6 +325,7 @@ const styles = StyleSheet.create({
   voteContent: {
     flex: 1,
     paddingVertical: 20,
+
   },
   voteRate: {
     fontFamily: 'Mulish-ExtraBold',
@@ -427,8 +384,9 @@ const styles = StyleSheet.create({
   },
   rate_container: {
     flexDirection: 'row',
-    justifyContent: 'flex-start',
+    justifyContent: 'center',
     alignItems: 'center',
+
   },
   list: {
     marginTop: 10,
@@ -443,7 +401,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: '#FFFFFF',
     shadowColor: '#000000',
-    shadowOffset: {width: 0, height: 2},
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,

@@ -174,6 +174,10 @@ const ReviewScreen = () => {
 export default ReviewScreen;
 
 const styles = StyleSheet.create({
+
+
+
+  
   ViewAll: {  
     paddingBottom: 20, 
     alignItems: 'center', 

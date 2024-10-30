@@ -10,11 +10,12 @@ import {
 import {useNavigation, useRoute} from '@react-navigation/native';
 import ToolBar from '../../component/ToolBar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import BASE_URL from '../../component/apiConfig';
 
 const ProfileScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
-  const userId = route.params?.userId;
+  const userID = route.params?.userID; // Updated parameter name
 
   const [userData, setUserData] = useState({
     _id: '',
@@ -24,18 +25,14 @@ const ProfileScreen = () => {
   });
 
   useEffect(() => {
-    if (!userId) {
-      console.error('User ID is not defined');
-      return;
-    }
-
     const fetchUserData = async () => {
       try {
-        const response = await fetch(
-          `http://localhost:3001/user/getUserByID/${userId}`,
-        );
+        const response = await fetch(`${BASE_URL}/user/getUserByID/${userID}`);
         const user = await response.json();
-
+        
+        console.log('User data:', user); // Kiểm tra giá trị trả về từ API
+        console.log('Avatar URL:', user.avatar); // Kiểm tra URL avatar
+  
         if (user) {
           setUserData({
             _id: user._id,
@@ -52,13 +49,13 @@ const ProfileScreen = () => {
         console.error('Error fetching user data:', error);
       }
     };
-
+  
     fetchUserData();
-  }, [userId]);
+  }, [userID]); // Updated dependency
 
   const handleEditProfile = () => {
     console.log('ID truyền qua là:', userData._id);
-    navigation.navigate('EditProfile', {userId: userData._id});
+    navigation.navigate('EditProfile', {userID: userData._id}); 
   };
 
   const onSignOut = async () => {

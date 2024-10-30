@@ -5,16 +5,21 @@ import {
   Image,
   TouchableOpacity,
   FlatList,
+  Modal,
+  TextInput,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
-import {useRoute, useNavigation} from '@react-navigation/native';
+import React, { useEffect, useState } from 'react';
+import { useRoute, useNavigation } from '@react-navigation/native';
 import BASE_URL from '../component/apiConfig';
 
 const ReviewCourseScreen = () => {
   const route = useRoute();
   const navigation = useNavigation();
-  const {courseId} = route.params;
+  const { courseId, userID } = route.params;
   const [reviews, setReviews] = useState([]);
+  const [isModalVisible, setModalVisible] = useState(false);
+  const [selectedStars, setSelectedStars] = useState(0);
+  const [comment, setComment] = useState('');
 
   useEffect(() => {
     fetchFeedbacks();
@@ -22,11 +27,7 @@ const ReviewCourseScreen = () => {
 
   const fetchFeedbacks = async () => {
     try {
-      // Gọi API để lấy feedbacks theo courseId
-      const response = await fetch(
-        `${BASE_URL}/feedbackCourse/getFeedbackByCourseID/${courseId}`
-      );
-      
+      const response = await fetch(`${BASE_URL}/feedbackCourse/getFeedbackByCourseID/${courseId}`);
       const feedbackData = await response.json();
 
       if (!Array.isArray(feedbackData)) {
@@ -34,17 +35,12 @@ const ReviewCourseScreen = () => {
         return;
       }
 
-      // Tạo mảng chứa thông tin của feedbacks và người dùng
       const feedbacksWithUser = await Promise.all(
         feedbackData.map(async feedback => {
-          // Gọi API lấy thông tin người dùng theo userID
-          const userResponse = await fetch(
-            `${BASE_URL}/user/getUserByID/${feedback.userID}`
-          );
-          
+          const userResponse = await fetch(`${BASE_URL}/user/getUserByID/${feedback.userID}`);
           const userData = await userResponse.json();
-          return {...feedback, userName: userData.name};
-        }),
+          return { ...feedback, userName: userData.name };
+        })
       );
 
       setReviews(feedbacksWithUser);
@@ -61,11 +57,10 @@ const ReviewCourseScreen = () => {
     const year = date.getFullYear();
     const hours = String(date.getHours()).padStart(2, '0');
     const minutes = String(date.getMinutes()).padStart(2, '0');
-    const seconds = String(date.getSeconds()).padStart(2, '0');
-    return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+    return `${day}/${month}/${year} ${hours}:${minutes}`;
   };
 
-  const renderItem = ({item}) => {
+  const renderItem = ({ item }) => {
     const stars = '⭐'.repeat(item.feedbackDetail.rating);
 
     return (
@@ -87,6 +82,48 @@ const ReviewCourseScreen = () => {
   const handleGoBack = () => {
     navigation.goBack();
   };
+
+  const handleStarPress = index => {
+    setSelectedStars(index + 1);
+  };
+
+  const handleSubmitReview = async () => {
+    // Kiểm tra xem userID và courseId có hợp lệ không
+    if (!userID || !courseId) {
+        console.error('User ID hoặc Course ID không hợp lệ', { userID, courseId });
+        return; // Thoát nếu không hợp lệ
+    }
+
+    // Tạo URL với userID và courseId
+    const feedbackUrl = `http://192.168.1.3:3001/feedbackCourse/feedback/${userID}/${courseId}`;
+
+    console.log(`Calling API: ${feedbackUrl}`); // Log URL để kiểm tra
+
+    try {
+        const response = await fetch(feedbackUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                rating: selectedStars || 5, // Sử dụng số sao đã chọn, nếu không có thì mặc định là 5
+                content: comment || "Bài học hấp dẫn.", // Sử dụng nội dung đã nhập, nếu không có thì sử dụng nội dung mẫu
+            }),
+        });
+
+        if (response.ok) {
+            console.log('Feedback submitted successfully'); // Xác nhận gửi feedback thành công
+            setModalVisible(false); // Đóng modal sau khi gửi đánh giá thành công
+            setComment(''); // Reset nội dung đánh giá
+            setSelectedStars(0); // Reset số sao đã chọn
+            fetchFeedbacks(); // Tải lại các đánh giá
+        } else {
+            console.error('Failed to submit feedback', await response.text()); // Log lỗi từ response
+        }
+    } catch (error) {
+        console.error('Error submitting feedback:', error); // Log lỗi nếu có
+    }
+};
 
   return (
     <View style={styles.container}>
@@ -110,10 +147,50 @@ const ReviewCourseScreen = () => {
       />
 
       <View style={styles.ViewAll}>
-        <TouchableOpacity style={styles.btnViewAllReview}>
+        <TouchableOpacity style={styles.btnViewAllReview} onPress={() => setModalVisible(true)}>
           <Text style={styles.txtViewAllReview}>Viết đánh giá</Text>
         </TouchableOpacity>
       </View>
+
+      <Modal
+        transparent={true}
+        animationType="slide"
+        visible={isModalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.formReview}>
+            <Text style={styles.txt_titleReview}>Thêm đánh giá của bạn!</Text>
+            <View style={styles.rate_container}>
+              {[...Array(5)].map((_, index) => (
+                <TouchableOpacity key={index} onPress={() => handleStarPress(index)}>
+                  <Image
+                    source={
+                      selectedStars > index
+                        ? require('../design/image/ic_star_filled.png')
+                        : require('../design/image/ic_star_outline.png')
+                    }
+                    style={[styles.star, { tintColor: selectedStars > index ? '#F2CA3D' : '#474953' }]}
+                  />
+                </TouchableOpacity>
+              ))}
+            </View>
+            <TextInput
+              placeholder="Viết đánh giá của bạn"
+              style={styles.input}
+              multiline={true}
+              value={comment}
+              onChangeText={setComment}
+            />
+            <TouchableOpacity style={styles.submitButton} onPress={handleSubmitReview}>
+              <Text style={styles.submitText}>Gửi đánh giá</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setModalVisible(false)}>
+              <Text style={styles.closeButton}>Đóng</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -121,6 +198,61 @@ const ReviewCourseScreen = () => {
 export default ReviewCourseScreen;
 
 const styles = StyleSheet.create({
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  formReview: {
+    width: '80%',
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 20,
+    alignItems: 'center',
+  },
+  txt_titleReview: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+  rate_container: {
+    flexDirection: 'row',
+    marginBottom: 15,
+  },
+  star: {
+    width: 40,
+    height: 40,
+    marginHorizontal: 5,
+  },
+  input: {
+    width: '100%',
+    height: 100,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 5,
+    padding: 10,
+    marginBottom: 15,
+  },
+  submitButton: {
+    backgroundColor: '#007BFF',
+    padding: 10,
+    borderRadius: 5,
+    width: '100%',
+    alignItems: 'center',
+  },
+  submitText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  closeButton: {
+    color: 'red',
+    marginTop: 10,
+    fontWeight: 'bold',
+  },
+
+
+
   countReview: {
     flexDirection: 'row',
     alignItems: 'center',

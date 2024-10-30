@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Image, FlatList } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native'; // Import useRoute
 import BASE_URL from '../component/apiConfig';
+
 const PopularCourses = () => {
     const navigation = useNavigation();
+    const route = useRoute(); // Lấy route để truy cập các tham số
+    const { userID } = route.params; // Nhận userID từ params
     const [activeCourse, setActiveCourse] = useState('Tất cả'); // Trạng thái khóa học đang hoạt động
     const [activeBookmarks, setActiveBookmarks] = useState({}); // Trạng thái bookmark cho các khóa học
     const [courses, setCourses] = useState([]); // Danh sách các khóa học
@@ -92,12 +95,12 @@ const PopularCourses = () => {
     const renderDetailItem = ({ item }) => {
         const isBookmarked = activeBookmarks[item._id]; // Kiểm tra xem khóa học có được bookmark hay không
 
-        // Hàm điều hướng đến màn hình chi tiết khóa học
         const handleDetail = () => {
             console.log("Course ID truyền qua là:", item._id); // Log ra ID của khóa học
-            navigation.navigate('Detail', { courseId: item._id });
+            console.log("User ID truyền qua là:", userID); // Log ra ID của người dùng
+            navigation.navigate('Detail', { courseId: item._id, userID: userID }); // Truyền cả courseId và userID
         };
-
+        
 
         return (
             <TouchableOpacity onPress={handleDetail} style={styles.detailItem}>

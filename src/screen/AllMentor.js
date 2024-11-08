@@ -1,15 +1,18 @@
 import { StyleSheet, Text, View, TouchableOpacity, Image, TextInput, FlatList, ActivityIndicator } from 'react-native';
 import React, { useEffect, useState } from 'react';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import axios from 'axios';
 import BASE_URL from '../component/apiConfig';
-
+import styles
+ from '../styles/AllMentorStyles';
 const AllMentor = () => {
   const navigation = useNavigation();
+  const route = useRoute(); 
+  const { userID } = route.params || {};
   const [mentors, setMentors] = useState([]);
-  const [filteredMentors, setFilteredMentors] = useState([]);  // Thêm state để lưu danh sách sau khi lọc
+  const [filteredMentors, setFilteredMentors] = useState([]);  
   const [loading, setLoading] = useState(true);
-  const [searchKeyword, setSearchKeyword] = useState('');  // Thêm state để lưu từ khóa tìm kiếm
+  const [searchKeyword, setSearchKeyword] = useState(''); 
 
   useEffect(() => {
 
@@ -34,9 +37,14 @@ const AllMentor = () => {
   };
 
   const handleViewProfileMentor = (mentor) => {
-    // Truyền _id của giảng viên vào navigation
-    navigation.navigate('ProfileMentor', { _id: mentor._id });
+    // Log để kiểm tra _id của giảng viên và userID
+    console.log('Mentor ID:', mentor._id);
+    console.log('User ID:', userID);
+    
+    // Truyền _id của giảng viên và userID vào navigation
+    navigation.navigate('ProfileMentor', { _id: mentor._id, userID });
   };
+  
   
 
   const renderItem = ({ item }) => (
@@ -85,94 +93,17 @@ const AllMentor = () => {
           style={styles.textInput}
           placeholder="Tìm kiếm"
           placeholderTextColor="#545454"
-          value={searchKeyword}  // Hiển thị từ khóa hiện tại
-          onChangeText={handleSearch}  // Gọi hàm handleSearch khi người dùng nhập
+          value={searchKeyword} 
+          onChangeText={handleSearch} 
         />
       </View>
       <FlatList
-        data={filteredMentors}  // Sử dụng danh sách đã lọc
+        data={filteredMentors} 
         renderItem={renderItem}
-        keyExtractor={(item, index) => item.id ? String(item.id) : String(index)}  // Sử dụng index làm key nếu id không tồn tại
+        keyExtractor={(item, index) => item.id ? String(item.id) : String(index)}  
       />
     </View>
   );
 };
 
 export default AllMentor;
-
-const styles = StyleSheet.create({
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: '100%',
-    height: 55,
-    borderRadius: 15,
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
-    marginTop: 20,
-  },
-  searchIcon: {
-    width: 30,
-    height: 30,
-    marginRight: 10,
-  },
-  textInput: {
-    flex: 1,
-    height: '100%',
-    fontSize: 16,
-    color: '#202244',
-    fontFamily: 'Mulish-Bold',
-    padding: 0,
-  },
-  container: {
-    flex: 1,
-    padding: 15,
-    backgroundColor: "#F5F9FF",
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  txtHeader: {
-    color: "#0D0D0D",
-    fontFamily: "Mulish-ExtraBold",
-    fontSize: 20,
-    paddingLeft: 20,
-  },
-  imgBack: {
-    width: 30,
-    height: 20,
-  },
-  itemContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 10,
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E8F1FF',
-  },
-  itemImage: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    marginRight: 15,
-  },
-  textContainer: {
-    flex: 1,
-  },
-  nameMentor: {
-    fontFamily: 'Mulish-ExtraBold',
-    fontSize: 18,
-    color: '#202244',
-  },
-  nameCategory: {
-    fontFamily: 'Mulish-Bold',
-    fontSize: 16,
-    color: '#545454',
-  },
-});

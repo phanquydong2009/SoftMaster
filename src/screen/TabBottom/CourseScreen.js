@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,31 +6,69 @@ import {
   TouchableOpacity,
   TextInput,
   FlatList,
-  StyleSheet,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import axios from 'axios';
+import styles from '../../stylesTabBottom/CourseScreenStyles';
+import BASE_URL from '../../component/apiConfig';
 
-const CourseScreen = () => {
+const CourseScreen = ({ route }) => {
+  const { userID } = route.params;
   const [selected, setSelected] = useState(1);
+  const [courses, setCourses] = useState([]); 
   const navigation = useNavigation();
+
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        // Gọi API lấy danh sách khóa học mà người dùng đã đăng ký
+        const response = await axios.get(
+          `${BASE_URL}/enrollCourse/getCourseUserEnrolled/${userID}`
+        );
+        const enrolledCourses = response.data;
+
+        // Lấy chi tiết cho từng khóa học
+        const courseDetails = await Promise.all(
+          enrolledCourses.map(async (course) => {
+            const courseDetailURL = `${BASE_URL}/course/getDetailByCourseID/${course.courseID._id}`;
+            console.log("Lấy chi tiết cho courseID:", course.courseID._id); 
+            const courseDetailResponse = await axios.get(courseDetailURL);
+            return {
+              ...courseDetailResponse.data,
+              progress: 'Chưa bắt đầu', 
+              progressWidth: '0%',
+              status: 'đang thực hiện',
+            };
+          })
+        );
+        setCourses(courseDetails);
+      } catch (error) {
+        console.error('Lỗi khi lấy dữ liệu khóa học:', error);
+      }
+    };
+  
+    fetchCourses();
+  }, [userID]);
+  
   const handleGoBack = () => {
     navigation.goBack();
   };
+
   const handlePress = (buttonId) => {
     setSelected(buttonId);
   };
- 
-  // Chuyển trang đến màn hình chứng chỉ
+
   const handleViewCert = () => {
     navigation.navigate('Cert');
   };
 
-  // Chuyển trang đến chi tiết khóa học
-  const handleViewCourseDetail = () => {
-    navigation.navigate('MyCourseDetail');
+  const handleViewCourseDetail = (courseID) => {
+    console.log("Đến MyCourseDetail với courseID:", courseID); 
+    navigation.navigate('MyCourseDetail', { courseID, userID });
   };
-
+  
   const renderItem = ({ item }) => {
+    // Hàm này trả về màu sắc cho thanh tiến trình tùy theo % hoàn thành
     const getProgressBarColor = (width) => {
       const progress = parseFloat(width);
       if (progress < 50) {
@@ -42,129 +80,99 @@ const CourseScreen = () => {
       }
     };
 
-    // Kiểm tra trạng thái và áp dụng TouchableOpacity nếu là 'in-progress'
-    const Wrapper = item.status === 'in-progress' ? TouchableOpacity : View;
+    // Kiểm tra nếu khóa học đang trong tình trạng "đang thực hiện" thì cho phép bấm vào để xem chi tiết
+    const Wrapper = item.status === 'đang thực hiện' ? TouchableOpacity : View;
 
     return (
       <Wrapper
-        style={myStyles.viewFlatlist}
-        onPress={item.status === 'in-progress' ? handleViewCourseDetail : undefined}
+        style={styles.viewFlatlist}
+        onPress={item.status === 'đang thực hiện' ? () => handleViewCourseDetail(item._id) : undefined}
       >
-        <Image source={item.image} style={myStyles.image} />
-        {item.status === 'complete' && (
+        <Image source={{ uri: item.img }} style={styles.image} />
+        
+        {item.status === 'hoàn thành' && (
           <Image
             source={require('../../design/image/complete_icon.png')}
-            style={myStyles.completeIcon}
+            style={styles.completeIcon}
           />
         )}
-        <View style={myStyles.content}>
-          <Text style={myStyles.title}>{item.title}</Text>
-          {/* Truncate description with ellipsis */}
-          <Text style={myStyles.description} numberOfLines={1} ellipsizeMode="tail">
-            {item.description}
+  
+        <View style={styles.content}>
+          <Text style={styles.title}>{item.subjectID.name}</Text> 
+          <Text style={styles.description} numberOfLines={1} ellipsizeMode="tail">
+            {item.describe}
           </Text>
-          <View style={myStyles.info}>
-            <View style={myStyles.rating}>
-              <Image
-                source={require('../../design/image/icon_star.png')}
-                style={myStyles.star}
-              />
-              <Text style={myStyles.ratingText}>{item.rating}</Text>
-            </View>
-            <Text style={myStyles.separator}>|</Text>
-            <View style={myStyles.duration}>
-              <Text style={myStyles.durationText}>{item.duration}</Text>
-            </View>
-          </View>
-          {item.status === 'complete' ? (
-            <TouchableOpacity style={myStyles.certificateButton} onPress={handleViewCert}>
-              <Text style={myStyles.certificateButtonText}>XEM CHỨNG CHỈ</Text>
+  
+          {item.status === 'hoàn thành' ? (
+            <TouchableOpacity style={styles.certificateButton} onPress={handleViewCert}>
+              <Text style={styles.certificateButtonText}>XEM CHỨNG CHỈ</Text>
             </TouchableOpacity>
           ) : (
-            <View style={myStyles.progressContainer}>
-              <View style={myStyles.progressBarBackground}>
+            <View style={styles.progressContainer}>
+              <View style={styles.progressBarBackground}>
                 <View
-                  style={[
-                    myStyles.progressBar,
+                  style={[ 
+                    styles.progressBar,
                     {
                       width: item.progressWidth,
                       backgroundColor: getProgressBarColor(item.progressWidth),
-                    },
+                    }
                   ]}
                 />
               </View>
-              <Text style={myStyles.progressText}>{item.progress}</Text>
+              <Text style={styles.progressText}>{item.progress}</Text>
             </View>
           )}
         </View>
       </Wrapper>
     );
   };
-
-  const filteredData = data.filter(
-    (item) => item.status === (selected === 1 ? 'complete' : 'in-progress')
+  
+  // Lọc dữ liệu dựa vào trạng thái của khóa học: "hoàn thành" hoặc "đang thực hiện"
+  const filteredData = courses.filter(
+    (item) => item.status === (selected === 1 ? 'hoàn thành' : 'đang thực hiện')
   );
 
   return (
-    <View style={myStyles.container}>
-      {/* Header */}
-      <View style={myStyles.viewHeader}>
-        <TouchableOpacity onPress={handleGoBack} >
+    <View style={styles.container}>
+      <View style={styles.viewHeader}>
+        <TouchableOpacity onPress={handleGoBack}>
           <Image source={require('../../design/image/ic_back.png')} />
         </TouchableOpacity>
-        <Text style={myStyles.viewTextHeader}>Khóa học của tôi</Text>
+        <Text style={styles.viewTextHeader}>Khóa học của tôi</Text>
       </View>
-      {/* Button Input */}
-      <View style={myStyles.viewInput}>
-        <TextInput style={myStyles.input} placeholder="Tìm kiếm..." />
+      <View style={styles.viewInput}>
+        <TextInput style={styles.input} placeholder="Tìm kiếm..." />
         <TouchableOpacity>
           <Image
             source={require('../../design/image/icon_search.png')}
-            style={myStyles.searchIcon}
+            style={styles.searchIcon}
           />
         </TouchableOpacity>
       </View>
-      {/* Button Hoàn Thành - Đang Thực Hiện */}
-      <View style={myStyles.viewDonePending}>
+      <View style={styles.viewDonePending}>
         <TouchableOpacity
-          style={[
-            myStyles.button,
-            { backgroundColor: selected === 1 ? '#167F71' : '#E8F1FF' },
-          ]}
+          style={[styles.button, { backgroundColor: selected === 1 ? '#167F71' : '#E8F1FF' }]}
           onPress={() => handlePress(1)}
         >
-          <Text
-            style={[
-              myStyles.buttonText,
-              { color: selected === 1 ? '#FFF' : '#202244' },
-            ]}
-          >
+          <Text style={[styles.buttonText, { color: selected === 1 ? '#FFF' : '#202244' }]}>
             Hoàn thành
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[
-            myStyles.button,
-            { backgroundColor: selected === 2 ? '#167F71' : '#E8F1FF' },
-          ]}
+          style={[styles.button, { backgroundColor: selected === 2 ? '#167F71' : '#E8F1FF' }]}
           onPress={() => handlePress(2)}
         >
-          <Text
-            style={[
-              myStyles.buttonText,
-              { color: selected === 2 ? '#FFF' : '#202244' },
-            ]}
-          >
+          <Text style={[styles.buttonText, { color: selected === 2 ? '#FFF' : '#202244' }]}>
             Đang thực hiện
           </Text>
         </TouchableOpacity>
       </View>
-      {/* Flatlist Khóa Học */}
-      <View style={myStyles.flatListContainer}>
+      <View style={styles.flatListContainer}>
         <FlatList
           data={filteredData}
           renderItem={renderItem}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item._id}
           showsVerticalScrollIndicator={false}
         />
       </View>
@@ -173,241 +181,3 @@ const CourseScreen = () => {
 };
 
 export default CourseScreen;
-
-const myStyles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding:15,
-    backgroundColor: '#F5F9FF',
-  },
-  viewHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent :'flex-start',
-    marginVertical: 10,
-  },
-  viewTextHeader: {
-    marginLeft: 15,
-    color: '#202244',
-    fontSize: 20,
-    fontFamily: 'Mulish-ExtraBold',  
-  },
-  viewInput: {
-    marginTop: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 15,
-    paddingHorizontal: 10,
-    backgroundColor: '#FFF',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 5,
-    height: 55,
-  },
-  input: {
-    flex: 1,
-    paddingLeft: 10,
-  },
-  searchIcon: {
-    width: 38,
-    height: 38,
-  },
-  viewDonePending: {
-    marginTop: 20,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  button: {
-    flex: 1,
-    borderRadius: 24,
-    paddingVertical: 10,
-    marginHorizontal: 5,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  buttonText: {
-    fontWeight: 'bold',
-  },
-  flatListContainer: {
-    flex: 1,
-  },
-  viewFlatlist: {
-    marginTop: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: 16,
-    backgroundColor: '#FFF',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    position: 'relative',
-  },
-  image: {
-    width: 100,
-    height: 100,
-    marginRight: 15,
-  },
-  completeIcon: {
-    position: 'absolute',
-    top: -10,
-    right: 10,
-    width: 35,
-    height: 35,
-  },
-  content: {
-    flex: 1,
-  },
-  title: {
-    color: '#FF6B00',
-    fontSize: 12,
-    fontFamily: 'Mulish-ExtraBold',
-    fontStyle: 'normal',
-    lineHeight: 20,
-  },
-  description: {
-    color: '#202244',
-    fontSize: 16,
-    fontFamily: 'Mulish',
-    fontStyle: 'normal',
-    fontWeight: '700',
-    lineHeight: 16,
-    marginVertical: 5,
-  },
-  info: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 10,
-  },
-  rating: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  star: {
-    width: 13,
-    height: 13,
-    marginRight: 5,
-  },
-  ratingText: {
-    fontSize: 15,
-    color: '#202244',
-    fontFamily: 'Mulish-Bold',
-    fontWeight: '400',
-    lineHeight: 20,
-  },
-  separator: {
-    color: '#6D7588',
-    fontSize: 15,
-    marginHorizontal: 8,
-  },
-  duration: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  durationText: {
-    fontSize: 15,
-    color: '#202244',
-    fontFamily: 'Mulish-Bold',
-    lineHeight: 20,
-  },
-  progressContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop:  5,
-  },
-  progressBarBackground: {
-    flex: 1,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#E5E8EF',
-    marginRight: 30,
-  },
-  progressBar: {
-    height: 10,
-    borderRadius: 5,
-
-  },
-  progressText: {
-    color: '#202244',
-    fontSize: 15,
-    fontWeight: 'bold',
-    marginRight  :10
-  },
-  certificateButton: {
-    flexDirection :"row",
-    alignItems :"center",
-    justifyContent :"flex-end",
-    borderRadius: 20,
-    paddingHorizontal: 15,
-    marginVertical: 10,
-  },
-  certificateButtonText: {
-    color: '#167F71',
-    fontSize: 14,
-    fontWeight: 'bold',
-  fontStyle :"italic"
-  },
-});
-const data = [
-  {
-    id: '1',
-    image: require('../../design/image/course1.png'),
-    title: 'Thiết kế UI/UX',
-    description: 'Giới thiệu về Thiết kế UI/UX',
-    rating: '4.4',
-    duration: '3 giờ 06 phút',
-    progress: '93/125',
-    progressWidth: '74%',
-    status: 'complete', // Chưa hoàn thành
-  },
-  {
-    id: '2',
-    image: require('../../design/image/course2.png'),
-    title: 'Lập trình React Native',
-    description: 'Khóa học về lập trình React Native cơ bản và nâng cao',
-    rating: '4.8',
-    duration: '2 giờ 45 phút',
-    progress: '85/100',
-    progressWidth: '85%',
-    status: 'in-progress', // Chưa hoàn thành
-  },
-  {
-    id: '3',
-    image: require('../../design/image/course3.png'),
-    title: 'Xây dựng Website',
-    description: 'Khóa học về phát triển và thiết kế website',
-    rating: '4.2',
-    duration: '4 giờ 30 phút',
-    progress: '35/100',
-    progressWidth: '35%',
-    status: 'in-progress', // Đang thực hiện
-  },
-  {
-    id: '4',
-    image: require('../../design/image/course4.png'),
-    title: 'Quản lý dự án',
-    description: 'Khóa học về quản lý và tổ chức dự án hiệu quả',
-    rating: '4.5',
-    duration: '3 giờ 15 phút',
-    progress: '50/70',
-    progressWidth: '71%',
-    status: 'in-progress', // Đang thực hiện
-  },
-  {
-    id: '5',
-    image: require('../../design/image/course5.png'),
-    title: 'Marketing Digital',
-    description: 'Khóa học về chiến lược và kỹ thuật marketing trên internet',
-    rating: '4.7',
-    duration: '2 giờ 30 phút',
-    progress: '80/100',
-    progressWidth: '80%',
-    status: 'in-progress', // Hoàn thành
-  },
-];

@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,15 +7,15 @@ import {
   StyleSheet,
   ScrollView,
 } from 'react-native';
-import {useNavigation, useRoute} from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import ToolBar from '../../component/ToolBar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BASE_URL from '../../component/apiConfig';
-
+import styles from '../../stylesTabBottom/ProfileScreenStyles';
 const ProfileScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
-  const userID = route.params?.userID; // Updated parameter name
+  const userID = route.params?.userID;
 
   const [userData, setUserData] = useState({
     _id: '',
@@ -29,10 +29,10 @@ const ProfileScreen = () => {
       try {
         const response = await fetch(`${BASE_URL}/user/getUserByID/${userID}`);
         const user = await response.json();
-        
+
         console.log('User data:', user); // Kiểm tra giá trị trả về từ API
         console.log('Avatar URL:', user.avatar); // Kiểm tra URL avatar
-  
+
         if (user) {
           setUserData({
             _id: user._id,
@@ -49,13 +49,13 @@ const ProfileScreen = () => {
         console.error('Error fetching user data:', error);
       }
     };
-  
+
     fetchUserData();
   }, [userID]); // Updated dependency
 
   const handleEditProfile = () => {
     console.log('ID truyền qua là:', userData._id);
-    navigation.navigate('EditProfile', {userID: userData._id}); 
+    navigation.navigate('EditProfile', { userID: userData._id });
   };
 
   const onSignOut = async () => {
@@ -90,7 +90,7 @@ const ProfileScreen = () => {
       value: 'Vietnam(VN)',
       onPress: () => navigation.navigate('Language'),
     },
-    {title: 'Chế độ tối', icon: require('../../design/image/dark_mode.png')},
+    { title: 'Chế độ tối', icon: require('../../design/image/dark_mode.png') },
     {
       title: 'Điều khoản & Điều kiện',
       icon: require('../../design/image/terms.png'),
@@ -108,7 +108,7 @@ const ProfileScreen = () => {
     },
   ];
 
-  const ProfileItem = ({icon, title, value, onPress}) => (
+  const ProfileItem = ({ icon, title, value, onPress }) => (
     <TouchableOpacity style={styles.item} onPress={onPress}>
       <View style={styles.itemLeft}>
         {icon && (
@@ -133,7 +133,7 @@ const ProfileScreen = () => {
               <Image
                 source={
                   userData.avatar
-                    ? {uri: userData.avatar}
+                    ? { uri: userData.avatar }
                     : require('../../design/image/noprofile.png')
                 }
                 style={styles.profileImage}
@@ -163,76 +163,5 @@ const ProfileScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f9ff',
-  },
-  header: {
-    alignItems: 'center',
-    padding: 20,
-  },
-  boxContainer: {
-    flex: 1,
-    backgroundColor: '#fff',
-    marginHorizontal: 20,
-    borderRadius: 25,
-  },
-  profileImage: {
-    width: 125,
-    height: 125,
-    borderRadius: 70,
-    marginBottom: 10,
-  },
-  name: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#202244',
-    marginTop: 20,
-  },
-  email: {
-    fontSize: 14,
-    color: '#545454',
-  },
-  item: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 15,
-  },
-  itemLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  itemIcon: {
-    width: 25,
-    height: 25,
-    marginRight: 10,
-    borderRadius: 5,
-  },
-  itemTitle: {
-    fontSize: 16,
-    color: '#202244',
-    fontWeight: 'bold',
-  },
-  itemRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  itemValue: {
-    marginRight: 10,
-    color: '#0961F5',
-    fontWeight: 'bold',
-    fontSize: 15,
-  },
-  updateImage: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    position: 'absolute',
-    bottom: 10,
-    right: 0,
-  },
-});
 
 export default ProfileScreen;

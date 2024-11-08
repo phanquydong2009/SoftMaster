@@ -34,6 +34,7 @@ import OtpForgetPassWord from '../screen/OtpForgetPassword';
 import DetailScreen from '../screen/DetailScreen';
 import VNPayPaymentScreen from '../screen/VNPayPaymentScreen';
 import ReviewCourseScreen from '../screen/ReviewCourseScreen';
+import DetailLesson from '../screen/DetailLesson';
 
 const Stack = createStackNavigator();
 
@@ -92,7 +93,9 @@ const AppNavigator = () => {
 
         <Stack.Screen name="AllCategory" component={AllCategory} />
         <Stack.Screen name="AllMentor" component={AllMentor} />
-        <Stack.Screen name="PopularCourses" component={PopularCourses} />
+        <Stack.Screen name="PopularCourses" component={PopularCourses}   options={{
+            gestureEnabled: false,
+          }}/>
         <Stack.Screen name="ProfileMentor" component={ProfileMentor} />
         <Stack.Screen name="ReviewScreen" component={ReviewScreen} />
         <Stack.Screen name="Search" component={SearchScreen} />
@@ -115,6 +118,7 @@ const AppNavigator = () => {
         <Stack.Screen name="Detail" component={DetailScreen} />
         <Stack.Screen name="CoursePayment" component={VNPayPaymentScreen} />
         <Stack.Screen name="ReviewCourse" component={ReviewCourseScreen} />
+        <Stack.Screen name="DetailLesson" component={DetailLesson}/>
       </Stack.Navigator>
     </NavigationContainer>
   );

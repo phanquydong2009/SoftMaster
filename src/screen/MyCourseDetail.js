@@ -2,46 +2,59 @@ import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   TouchableOpacity,
   TextInput,
   Image,
   FlatList,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import axios from 'axios';
 import BASE_URL from '../component/apiConfig';
+import styles from '../styles/MyCourseDetailScreenStyles';
 
 const MyCourseDetail = () => {
   const navigation = useNavigation();
+  const route = useRoute();
+  const { courseID, userID } = route.params;
+
+
+  // Log giá trị courseID để kiểm tra
+  useEffect(() => {
+    console.log("courseID nhận được từ params:", courseID);
+  }, [courseID]);
+
   const [data, setData] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(`${BASE_URL}/test/getAll`);
-        setData(response.data);
+        const response = await axios.get(`${BASE_URL}/lesson/getLessonByCourseID/${courseID}`);
+        // Gán dữ liệu từ API vào state
+        const lessonsWithID = response.data.map(lesson => ({
+          ...lesson,
+          _id: lesson._id || "default_id",
+        }));
+        setData(lessonsWithID);
       } catch (error) {
-        console.error(error);
+        console.error("Lỗi khi lấy dữ liệu bài học:", error);
       }
     };
 
     fetchData();
-  }, []);
+  }, [courseID]);
 
   const handleGoBack = () => {
     navigation.goBack();
   };
 
-// Chuyển trang 
-const handleGoToQuizzCourse = (_id) => {
-  console.log("Navigating to QuizzCourse with ID:", _id); 
-  navigation.navigate('QuizzCourse', { _id });
-};
-
+  const handleGoToDetailLesson = (_id) => {
+    console.log("Truyền ID và userID:", _id, userID);
+    navigation.navigate('DetailLesson', { _id, userID });
+  };
+  
 
   const renderItem = ({ item, index }) => (
-    <View style={styles.columnItem}>
+    <TouchableOpacity style={styles.columnItem} onPress={() => handleGoToDetailLesson(item._id)}>
       <View style={styles.courseSection}>
         <View style={styles.number_container}>
           <Text style={styles.number}>{String(index + 1).padStart(2, '0')}</Text>
@@ -50,14 +63,9 @@ const handleGoToQuizzCourse = (_id) => {
           <Text style={styles.sectionTitle}>{item.title}</Text>
           <Text style={styles.sectionDay}>{item.updatedAt.split('T')[0]}</Text>
         </View>
-        {/* Cập nhật hình ảnh để xử lý bấm vào */}
-        <TouchableOpacity onPress={() => handleGoToQuizzCourse(item._id)}>
-          <Image source={require('../design/image/ic_quiz.png')} style={styles.icon_quizz} />
-        </TouchableOpacity>
       </View>
-      {/* Dòng phân cách */}
       <View style={styles.separator} />
-    </View>
+    </TouchableOpacity>
   );
 
   return (
@@ -79,112 +87,21 @@ const handleGoToQuizzCourse = (_id) => {
         </TouchableOpacity>
       </View>
 
-      <FlatList
-        data={data}
-        renderItem={renderItem}
-        keyExtractor={(item, index) => `${item.id}-${index}`}
-        showsVerticalScrollIndicator={false}
-        style={styles.container_list}
-      />
+      {data.length === 0 ? (
+        <View style={styles.noDataContainer}>
+          <Text style={styles.noDataText}>Chưa có khóa học nào ! Giảng viên sẽ cập nhật sau!</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={data}
+          renderItem={renderItem}
+          keyExtractor={(item) => item._id}
+          showsVerticalScrollIndicator={false}
+          style={styles.container_list}
+        />
+      )}
     </View>
   );
 };
 
 export default MyCourseDetail;
-
-const styles = StyleSheet.create({
-  container_list: {
-    backgroundColor: "#FFFFFF",
-    marginTop: 20,
-    borderRadius: 20,
-  },
-  number: {
-    fontFamily: 'Mulish-ExtraBold',
-    fontSize: 20,
-    color: "#202244"
-  },
-  number_container: {
-    width: 50,
-    height: 50,
-    borderRadius: 30,
-    borderWidth: 2,
-    borderColor: '#E8F1FF',
-    backgroundColor: "#F5F9FF",
-    justifyContent: "center",
-    alignItems: "center"
-  },
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: '#F5F9FF',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  headerTitle: {
-    marginLeft: 15,
-    color: '#202244',
-    fontSize: 21,
-    fontWeight: '700',
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 15,
-    paddingHorizontal: 10,
-    backgroundColor: '#FFF',
-    height: 55,
-    marginVertical: 10
-  },
-  input: {
-    flex: 1,
-    paddingLeft: 10,
-  },
-  searchIcon: {
-    width: 38,
-    height: 38,
-  },
-  icon_quizz: {
-    height: 40,
-    width: 40,
-  },
-  sectionDay: {
-    fontFamily: 'Mulish-Bold',
-    fontSize: 13,
-    color: "#545454",
-    marginTop: 10
-  },
-  sectionTitle: {
-    fontFamily: 'Mulish-ExtraBold',
-    fontSize: 17,
-    color: "#202244"
-  },
-  column_text: {
-    flexDirection: 'column',
-    justifyContent: "space-between",
-    width: 200
-  },
-  columnItem: {
-    flexDirection: "column"
-  },
-  courseSection: {
-    padding: 15,
-    borderRadius: 16,
-    marginBottom: 12,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center"
-  },
-  separator: {
-    height: 1,
-    backgroundColor: '#E0E0E0',
-    width: '100%',
-  },
-  noLessons: {
-    textAlign: 'center',
-    color: '#545454',
-  },
-});

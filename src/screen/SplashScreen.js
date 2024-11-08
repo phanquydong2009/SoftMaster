@@ -1,8 +1,7 @@
-// src/screen/SplashScreen.js
 import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Image, Animated } from 'react-native';
+import { View,  Animated } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-
+import styles from '../styles/SplashScreenStyles';
 const SplashScreen = () => {
   const navigation = useNavigation();
 
@@ -82,28 +81,6 @@ const SplashScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor :"#FFFFF",
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-  },
-  logo: {
-    width: 360,
-    height: 370,
-  },
-  txtname: {
-    fontSize: 50,
-    color: "#13248D",
-    fontFamily: 'Mulish-ExtraBold',
-  },
-  txttitle: {
-    fontSize: 26,
-    fontFamily: 'Mulish-Bold',
-    color: "#13248D",
-  },
-});
+
 
 export default SplashScreen;

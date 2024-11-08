@@ -1,5 +1,4 @@
 import {
-  StyleSheet,
   Text,
   View,
   TouchableOpacity,
@@ -10,14 +9,15 @@ import {
 import React, { useCallback, useEffect, useState } from 'react'; 
 import { useIsFocused, useNavigation, useRoute } from '@react-navigation/native';
 import BASE_URL from '../component/apiConfig';
+import styles from '../styles/DetailScreenStyles';
 
 const DetailScreen = () => {
   const navigation = useNavigation();
   const route = useRoute(); 
   const { courseId, userID } = route.params; 
 
-  console.log("Course ID nhận được là:", courseId);
-  console.log("User ID nhận được là:", userID);
+  console.log("ID khóa học nhận được là:", courseId);
+  console.log("ID người dùng nhận được là:", userID);
 
   const [courseData, setCourseData] = useState(null); 
   const [averageRating, setAverageRating] = useState(null); 
@@ -31,24 +31,24 @@ const DetailScreen = () => {
 
   const fetchCourseDetail = useCallback(async () => {
     if (!userID) {
-      Alert.alert('Lỗi', 'Không tìm thấy User ID');
+      Alert.alert('Lỗi', 'Không tìm thấy ID người dùng');
       return;
     }
 
     try {
-      // Gọi API lấy thông tin chi tiết khóa học
+      // Gọi API để lấy thông tin chi tiết khóa học
       const courseResponse = await fetch(
         `${BASE_URL}/course/getDetailByCourseID/${courseId}/?userID=${userID}`,
       );
 
       if (!courseResponse.ok) {
-        throw new Error('Error fetching course detail');
+        throw new Error('Lỗi khi lấy thông tin chi tiết khóa học');
       }
       
       const courseData = await courseResponse.json();
       setCourseData(courseData);
     } catch (error) {
-      console.error('Error fetching course detail:', error);
+      console.error('Lỗi khi lấy thông tin chi tiết khóa học:', error);
       Alert.alert('Có lỗi xảy ra, vui lòng thử lại');
     }
   }, [courseId, userID]);
@@ -67,7 +67,7 @@ const DetailScreen = () => {
         );
 
         if (!ratingResponse.ok) {
-          throw new Error('Error fetching average rating');
+          throw new Error('Lỗi khi lấy đánh giá trung bình');
         }
         const ratingData = await ratingResponse.json();
         setAverageRating(ratingData.averageRating);
@@ -77,12 +77,12 @@ const DetailScreen = () => {
         );
 
         if (!feedbackResponse.ok) {
-          throw new Error('Error fetching feedback count');
+          throw new Error('Lỗi khi lấy số lượng phản hồi');
         }
         const feedbackData = await feedbackResponse.json();
         setCountFeedback(feedbackData.count);
       } catch (error) {
-        console.error('Error fetching course details or feedback:', error);
+        console.error('Lỗi khi lấy thông tin khóa học hoặc phản hồi:', error);
       }
     };
   
@@ -115,13 +115,13 @@ const DetailScreen = () => {
   if (!courseData) {
     return (
       <View style={styles.container}>
-        <Text>Loading...</Text>
+        <Text>Đang tải...</Text>
       </View>
     );
   }
 
   const { name, img, describe, teacherID } = courseData;
-  const teacherName = teacherID ? teacherID.name : 'Unknown Teacher';
+  const teacherName = teacherID ? teacherID.name : 'Giảng viên không xác định';
 
   const onJoinCoursePress = async () => {
     if (isJoinedCourse) {
@@ -189,7 +189,7 @@ const DetailScreen = () => {
           </View>
         </View>
         <View style={styles.line} />
-        {/* Scrollable description */}
+        {/* Mô tả cuộn được */}
         <View style={styles.describe}>
           <ScrollView nestedScrollEnabled={true} style={styles.scrollDescribe}>
             <Text style={styles.txt_describe}>{describe}</Text>
@@ -213,131 +213,3 @@ const DetailScreen = () => {
 
 export default DetailScreen;
 
-const styles = StyleSheet.create({
-  button: {
-    marginBottom: 20,
-    marginTop: 10,
-  },
-  txtBtn: {
-    color: '#FFFFFF',
-    fontFamily: 'Mulish-ExtraBold',
-    fontSize: 16,
-  },
-  btn_container: {
-    backgroundColor: '#0961F5',
-    justifyContent: 'center',
-    alignItems: 'center',
-    height: 50,
-    borderRadius: 20,
-  },
-  line: {
-    width: '90%',
-    height: 2,
-    backgroundColor: '#C5DAFB',
-    marginHorizontal: 20,
-  },
-  describe: {
-    height: 180,
-    marginHorizontal: 10,
-    marginTop: 10,
-  },
-  scrollDescribe: {
-    paddingHorizontal: 10,
-  },
-  txt_describe: {
-    color: '#202244',
-    fontFamily: 'Mulish-ExtraBold',
-    fontSize: 16,
-    textAlign: 'justify',
-  },
-  txt_number: {
-    color: '#202244',
-    fontFamily: 'Mulish-ExtraBold',
-    fontSize: 18,
-  },
-  title: {
-    color: '#545454',
-    fontFamily: 'Mulish-ExtraBold',
-    fontSize: 17,
-  },
-  column: {
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  data_container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    margin: 15,
-  },
-  txtInfo: {
-    fontSize: 19,
-    color: '#0961F5',
-    fontFamily: 'Mulish-ExtraBold',
-    marginVertical: 5,
-  },
-  infoCourse: {
-    flexDirection: 'column',
-    marginHorizontal: 20,
-    marginTop: 10,
-    justifyContent: 'flex-start',
-  },
-  nameTeacher: {
-    fontSize: 19,
-    color: '#202244',
-    fontFamily: 'Mulish-Bold',
-    marginHorizontal: 20,
-  },
-  avatarTeacher: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-  },
-  infoTeacher: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    marginHorizontal: 20,
-  },
-  nameCourse: {
-    fontSize: 20,
-    color: '#202244',
-    fontFamily: 'Mulish-ExtraBold',
-    marginVertical: 10,
-    textAlign: 'center',
-  },
-  imgBanner: {
-    width: '100%',
-    height: 180,
-    borderRadius: 20,
-  },
-  banner: {
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  txtHeader: {
-    color: '#0D0D0D',
-    fontFamily: 'Mulish-ExtraBold',
-    fontSize: 20,
-    paddingLeft: 20,
-  },
-  imgBack: {
-    width: 30,
-    height: 20,
-  },
-  top: {
-    backgroundColor: '#FFFFFF',
-  },
-  container: {
-    flex: 1,
-    padding: 15,
-    backgroundColor: '#F5F9FF',
-  },
-});

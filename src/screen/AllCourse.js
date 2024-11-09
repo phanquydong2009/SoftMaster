@@ -5,12 +5,12 @@ import BASE_URL from '../component/apiConfig';
 import styles from '../styles/PopularCoursesStyles';
 const PopularCourses = () => {
     const navigation = useNavigation();
-    const route = useRoute(); // Lấy route để truy cập các tham số
-    const { userID } = route.params; // Nhận userID từ params
-    const [activeCourse, setActiveCourse] = useState('Tất cả'); // Trạng thái khóa học đang hoạt động
-    const [activeBookmarks, setActiveBookmarks] = useState({}); // Trạng thái bookmark cho các khóa học
-    const [courses, setCourses] = useState([]); // Danh sách các khóa học
-    const [courseDetails, setCourseDetails] = useState([]); // Chi tiết khóa học
+    const route = useRoute(); 
+    const { userID } = route.params; 
+    const [activeCourse, setActiveCourse] = useState('Tất cả');
+    const [activeBookmarks, setActiveBookmarks] = useState({}); 
+    const [courses, setCourses] = useState([]); 
+    const [courseDetails, setCourseDetails] = useState([]); 
 
     // Lấy danh sách môn học từ API
     useEffect(() => {
@@ -70,14 +70,14 @@ const PopularCourses = () => {
 
     // Hàm hiển thị từng item khóa học
     const renderCourseItem = ({ item }) => {
-        const isActive = item.name === activeCourse; // Kiểm tra khóa học đang hoạt động
+        const isActive = item.name === activeCourse; 
         return (
             <TouchableOpacity
                 style={[
                     styles.courseItem,
                     { backgroundColor: isActive ? '#167F71' : '#E8F1FF' }
                 ]}
-                onPress={() => setActiveCourse(item.name)} // Cập nhật khóa học đang hoạt động
+                onPress={() => setActiveCourse(item.name)}
             >
                 <Text
                     style={[
@@ -93,12 +93,11 @@ const PopularCourses = () => {
 
     // Hàm hiển thị từng item chi tiết khóa học
     const renderDetailItem = ({ item }) => {
-        const isBookmarked = activeBookmarks[item._id]; // Kiểm tra xem khóa học có được bookmark hay không
+        const isBookmarked = activeBookmarks[item._id]; 
 
         const handleDetail = () => {
-            console.log("Course ID truyền qua là:", item._id); // Log ra ID của khóa học
-            console.log("User ID truyền qua là:", userID); // Log ra ID của người dùng
-            navigation.navigate('Detail', { courseId: item._id, userID: userID }); // Truyền cả courseId và userID
+            console.log(`User ID: ${userID}, Course ID: ${item._id}`);
+            navigation.navigate('Detail', { courseId: item._id, userID: userID });
         };
         
 
@@ -142,14 +141,14 @@ const PopularCourses = () => {
                 <TouchableOpacity onPress={handleBack}>
                     <Image source={require("../design/image/ic_back.png")} style={styles.imgBack} />
                 </TouchableOpacity>
-                <Text style={styles.txtHeader}>Khóa học phổ biến</Text>
+                <Text style={styles.txtHeader}>Tất cả khóa học</Text>
             </View>
 
             <View style={styles.flatListWrapper}>
                 <FlatList
                     data={courses}
                     renderItem={renderCourseItem}
-                    keyExtractor={(item) => item._id ? item._id.toString() : item.name} // Sử dụng ID nếu có
+                    keyExtractor={(item) => item._id ? item._id.toString() : item.name} 
                     horizontal
                     showsHorizontalScrollIndicator={false}
                     contentContainerStyle={styles.flatListContainer}

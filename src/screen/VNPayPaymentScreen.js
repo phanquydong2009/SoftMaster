@@ -1,6 +1,6 @@
 import {useNavigation, useRoute} from '@react-navigation/native';
 import React from 'react';
-import {Alert, Text, View} from 'react-native';
+import {Alert, View} from 'react-native';
 import {WebView} from 'react-native-webview';
 import BASE_URL from '../component/apiConfig';
 

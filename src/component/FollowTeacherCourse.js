@@ -1,43 +1,45 @@
 import React, { useState, useEffect } from 'react';
 import { FlatList, View, Text, Image, StyleSheet } from 'react-native';
+import BASE_URL from './apiConfig';
 
-const FollowTeacherCourse = ({ userID }) => {  // Nhận userID từ props
-    const [followingData, setFollowingData] = useState([]);  // State để lưu dữ liệu khóa học theo dõi
+const FollowTeacherCourse = ({ userID }) => {
+    const [followingData, setFollowingData] = useState([]);
 
     useEffect(() => {
-        // Bước 1: Lấy danh sách giáo viên đã theo dõi
         const fetchFollowedTeachers = async () => {
             try {
-                const response = await fetch(`http://192.168.1.5:3001/followTeacher/getFollowed-teachers/${userID}`);
+                const response = await fetch(`${BASE_URL}/followTeacher/getFollowed-teachers/${userID}`);
                 const data = await response.json();
-                
+
                 if (data && data.length > 0) {
-                    // Bước 2: Với mỗi giáo viên, lấy thông tin khóa học
                     const coursePromises = data.map(async teacher => {
-                        const courseResponse = await fetch(`http://192.168.1.5:3001/course/getCourseByTeacherID/${teacher._id}`);
+                        const courseResponse = await fetch(`${BASE_URL}/course/getCourseByTeacherID/${teacher._id}`);
                         const courseData = await courseResponse.json();
 
-                        // Nếu có khóa học, chỉ lấy khóa học đầu tiên
                         if (courseData && courseData.length > 0) {
-                            const course = courseData[0];  // Lấy khóa học đầu tiên
+                            const course = courseData[0];
                             return {
-                                id: teacher._id,  // ID giáo viên
-                                image: course.img,  // Hình ảnh khóa học
-                                name: course.name,  // Tên khóa học
-                                price: course.price,  // Giá khóa học
-                                teacher_name: teacher.name,  // Tên giáo viên
-                                description: course.description,  // Mô tả khóa học
-                                describe: course.describe,  // Thêm trường describe
+                                id: teacher._id,
+                                image: course.img,
+                                name: course.name,
+                                price: course.price,
+                                teacher_name: teacher.name,
+                                description: course.description,
+                                describe: course.describe,
+                                createdAt: course.createdAt, // Giả sử khóa học có trường createdAt
                             };
                         }
                     });
 
-                    // Chờ tất cả các API khóa học hoàn thành
                     const courses = await Promise.all(coursePromises);
 
-                    // Lọc ra các khóa học không có dữ liệu
+                    // Lọc ra các khóa học hợp lệ và sắp xếp theo createdAt từ mới đến cũ
                     const validCourses = courses.filter(course => course !== undefined);
-                    setFollowingData(validCourses);  // Cập nhật state
+
+                    // Sắp xếp theo createdAt (mới nhất ở đầu)
+                    validCourses.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+                    setFollowingData(validCourses);
                 }
             } catch (error) {
                 console.error('Error fetching followed teachers:', error);
@@ -45,9 +47,8 @@ const FollowTeacherCourse = ({ userID }) => {  // Nhận userID từ props
         };
 
         fetchFollowedTeachers();
-    }, [userID]);  // Chạy lại mỗi khi userID thay đổi
+    }, [userID]);
 
-    // Hàm renderItem cho mục "Đang theo dõi"
     const renderItemFollow = ({ item }) => (
         <View style={styles.followItemContainer}>
             <View style={styles.row1}>
@@ -55,15 +56,13 @@ const FollowTeacherCourse = ({ userID }) => {  // Nhận userID từ props
                 <View style={styles.followItemTextContainer}>
                     <Text style={styles.followItemName}>{item.name}</Text>
                     <Text style={styles.followItemPrice}>{item.price} VND</Text>
-                    <Text style={styles.followItemTeacher}>{item.teacher_name}</Text>
+                    <Text style={styles.followItemTeacher} numberOfLines={1} ellipsizeMode="tail">{item.teacher_name}</Text>
                 </View>
-                <Text style={styles.followItemDescription} numberOfLines={2} ellipsizeMode="tail">
-                {item.description}
-            </Text>
+              
             </View>
-           
+
             {/* Hiển thị trường describe nếu có */}
-            <Text style={styles.followItemDescription}>
+            <Text style={styles.followItemDescription} numberOfLines={1} ellipsizeMode="tail">
                 {item.describe}
             </Text>
         </View>
@@ -72,14 +71,13 @@ const FollowTeacherCourse = ({ userID }) => {  // Nhận userID từ props
     return (
         <View style={styles.containerItemF}>
             <Text style={styles.title}>Đang theo dõi</Text>
-            {/* Hiển thị danh sách các khóa học đang theo dõi theo chiều ngang */}
             <FlatList
                 data={followingData}
                 renderItem={renderItemFollow}
                 keyExtractor={item => item.id}
-                horizontal={true}  // Set flatlist to be horizontal
-                showsHorizontalScrollIndicator={false}  // Hide horizontal scroll indicator (optional)
-                contentContainerStyle={styles.flatListContent} // Optional: add style for spacing
+                horizontal={true}
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.flatListContent}
             />
         </View>
     );
@@ -95,12 +93,15 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     flatListContent: {
-        paddingHorizontal: 10, 
+        paddingHorizontal: 10,
     },
     followItemContainer: {
-        width: 250, 
-        marginRight: 15,  
-        marginVertical: 20
+        width: 250,
+        marginRight: 15,
+        marginVertical: 20,
+        backgroundColor: '#FFFFFF',
+        borderRadius : 20,
+        padding : 10
     },
     row1: {
         flexDirection: 'row',
@@ -133,7 +134,7 @@ const styles = StyleSheet.create({
         marginTop: 5,
         fontFamily: "Mulish-ExtraBold",
         color: "black",
-        textAlign: 'justify'
+        textAlign: 'justify',
     },
 });
 

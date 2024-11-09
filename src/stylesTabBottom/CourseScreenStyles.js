@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
   },
   title: {
     color: '#FF6B00',
-    fontSize: 12,
+    fontSize:15,
     fontFamily: 'Mulish-ExtraBold',
     fontStyle: 'normal',
     lineHeight: 20,

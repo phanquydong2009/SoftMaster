@@ -98,7 +98,8 @@ const CourseScreen = ({ route }) => {
         )}
   
         <View style={styles.content}>
-          <Text style={styles.title}>{item.subjectID.name}</Text> 
+          {/* <Text style={styles.title}>{item.subjectID.name}</Text>  */}
+          <Text style={styles.title}>{item.name}</Text> 
           <Text style={styles.description} numberOfLines={1} ellipsizeMode="tail">
             {item.describe}
           </Text>

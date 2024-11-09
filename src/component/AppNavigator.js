@@ -10,7 +10,7 @@ import OtpScreen from '../screen/OtpScreen';
 import TabNavigator from '../component/TabNavigator';
 import AllCategory from '../screen/AllCategory';
 import AllMentor from '../screen/AllMentor';
-import PopularCourses from '../screen/PopularCourses';
+import PopularCourses from '../screen/AllCourse';
 import ProfileMentor from '../screen/ProfileMentor';
 import ReviewScreen from '../screen/ReviewScreen';
 import SearchScreen from '../screen/SearchScreen';
